@@ -162,45 +162,103 @@ function Problem() {
   );
 }
 
+const HOW_STEPS = [
+  { t: "Upload your notes or PDF", d: "Drop in lecture notes, JAMB past questions, or your tutor's deck." },
+  { t: "AI structures your content", d: "Groq + Aethex turn raw text into ordered, bite-size lessons." },
+  { t: "StudyPal reads it aloud", d: "Hands-free learning while you commute, cook or close the shop." },
+  { t: "Voice comprehension check", d: "Three quick questions. Speak or tap. Real understanding." },
+  { t: "Daily Pulse tracks progress", d: "Not motivation quotes — actual coverage data day by day." },
+];
+
+function HowStep({ index, total, t, d, activeIndex, onEnter }: {
+  index: number; total: number; t: string; d: string; activeIndex: number; onEnter: (i: number) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { amount: 0.55, margin: "-20% 0px -30% 0px" });
+  useEffect(() => { if (inView) onEnter(index); }, [inView, index, onEnter]);
+
+  const reached = index <= activeIndex;
+  const isActive = index === activeIndex;
+  const isPast = index < activeIndex;
+
+  return (
+    <div ref={ref} className="relative grid grid-cols-[56px_1fr] gap-5 pb-16 last:pb-0 md:grid-cols-[72px_1fr] md:gap-8">
+      {/* Vertical line segment to next step */}
+      {index < total - 1 && (
+        <div className="absolute left-[27px] top-14 h-[calc(100%-3.5rem)] w-px overflow-hidden bg-border md:left-[35px]">
+          <motion.div
+            initial={{ scaleY: 0 }}
+            animate={{ scaleY: reached ? 1 : 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            style={{ transformOrigin: "top" }}
+            className="h-full w-full bg-accent"
+          />
+        </div>
+      )}
+
+      {/* Number circle */}
+      <motion.div
+        initial={false}
+        animate={{ scale: isActive ? 1.06 : 1 }}
+        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        className={`relative z-10 grid h-14 w-14 place-items-center rounded-full border font-mono text-sm transition-colors duration-500 md:h-[72px] md:w-[72px] md:text-base ${
+          reached
+            ? "border-accent bg-accent text-accent-foreground"
+            : "border-border bg-background text-muted-foreground"
+        } ${isActive ? "shadow-[0_0_0_6px_rgb(13_148_136_/_0.15)]" : ""}`}
+      >
+        0{index + 1}
+      </motion.div>
+
+      {/* Text card */}
+      <motion.div
+        initial={{ opacity: 0, x: -32 }}
+        animate={inView ? { opacity: 1, x: 0 } : { opacity: 0.35, x: -8 }}
+        transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }}
+        className={`rounded-2xl border bg-card/60 p-5 transition-all duration-500 md:p-6 ${
+          isActive
+            ? "border-l-4 border-l-accent border-border shadow-lg"
+            : isPast
+            ? "border-border opacity-60"
+            : "border-border/60 opacity-50"
+        }`}
+      >
+        <h3 className={`font-display text-xl leading-tight md:text-2xl ${reached ? "text-foreground" : "text-muted-foreground"}`}>
+          {t}
+        </h3>
+        <p className="mt-2 text-sm text-muted-foreground md:text-base">{d}</p>
+      </motion.div>
+    </div>
+  );
+}
+
 function HowItWorks() {
-  const steps = [
-    { t: "Upload your notes or PDF", d: "Drop in lecture notes, JAMB past questions, or your tutor's deck." },
-    { t: "AI structures your content", d: "Groq + Aethex turn raw text into ordered, bite-size lessons." },
-    { t: "StudyPal reads it aloud", d: "Hands-free learning while you commute, cook or close the shop." },
-    { t: "Voice comprehension check", d: "Three quick questions. Speak or tap. Real understanding." },
-    { t: "Daily Pulse tracks progress", d: "Not motivation quotes — actual coverage data day by day." },
-  ];
+  const [activeIndex, setActiveIndex] = useState(0);
+  const onEnter = (i: number) => setActiveIndex((cur) => (i > cur ? i : cur));
+
   return (
     <section id="how" className="border-t border-border bg-card py-24">
-      <div className="mx-auto max-w-7xl px-5">
-        <div className="mb-14 flex items-end justify-between gap-6">
+      <div className="mx-auto max-w-4xl px-5">
+        <div className="mb-16 flex items-end justify-between gap-6">
           <div>
             <div className="font-mono text-xs text-muted-foreground">02 / THE FLOW</div>
             <h2 className="mt-3 font-display text-4xl md:text-5xl">How StudyPal works.</h2>
           </div>
-          <div className="hidden font-mono text-xs text-muted-foreground md:block">— scroll to follow the steps</div>
+          <div className="hidden font-mono text-xs text-muted-foreground md:block">— scroll to follow ↓</div>
         </div>
 
         <div className="relative">
-          <div className="absolute left-0 right-0 top-7 hidden h-px bg-border md:block" />
-          <div className="grid gap-6 md:grid-cols-5">
-            {steps.map((s, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.6 }}
-                className="relative"
-              >
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-border bg-background font-mono text-sm">
-                  0{i + 1}
-                </div>
-                <div className="font-display text-lg leading-tight">{s.t}</div>
-                <p className="mt-2 text-sm text-muted-foreground">{s.d}</p>
-              </motion.div>
-            ))}
-          </div>
+          {HOW_STEPS.map((s, i) => (
+            <HowStep
+              key={i}
+              index={i}
+              total={HOW_STEPS.length}
+              t={s.t}
+              d={s.d}
+              activeIndex={activeIndex}
+              onEnter={onEnter}
+            />
+          ))}
         </div>
       </div>
     </section>
