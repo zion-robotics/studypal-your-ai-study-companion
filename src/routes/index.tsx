@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { TopNav } from "@/components/sp/TopNav";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -37,8 +37,8 @@ function Hero() {
     <section ref={ref} className="relative isolate overflow-hidden">
       {/* parallax bg */}
       <motion.div style={{ y: yBg }} className="absolute inset-0 -z-10">
-        <img src={HERO_IMG} alt="" className="h-full w-full object-cover opacity-25 dark:opacity-15" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
+        <img src={HERO_IMG} alt="" className="h-full w-full object-cover opacity-60 dark:opacity-35" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/55 to-background" />
       </motion.div>
 
       <div className="mx-auto grid max-w-7xl gap-12 px-5 pb-24 pt-20 md:grid-cols-12 md:pt-32">
@@ -71,10 +71,16 @@ function Hero() {
           </div>
         </motion.div>
 
-        {/* 3D Mockup */}
-        <motion.div style={{ y: yMock }} className="perspective relative md:col-span-5">
-          <div className="animate-float-rotate preserve-3d mx-auto w-full max-w-md">
-            <div className="rounded-3xl border border-border bg-card p-5 shadow-2xl">
+        {/* Simple Mockup */}
+        <motion.div
+          style={{ y: yMock }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="relative md:col-span-5"
+        >
+          <div className="mx-auto w-full max-w-md">
+            <div className="rounded-3xl border border-border bg-card p-5 shadow-xl">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="h-2.5 w-2.5 rounded-full bg-accent" />
@@ -85,7 +91,7 @@ function Hero() {
               <div className="relative mx-auto my-2 grid h-44 w-44 place-items-center">
                 <svg viewBox="0 0 200 200" className="absolute inset-0 -rotate-90">
                   <circle cx="100" cy="100" r="86" stroke="currentColor" className="text-muted" strokeWidth="14" fill="none" />
-                  <circle cx="100" cy="100" r="86" stroke="currentColor" className="text-accent animate-heartbeat origin-center" strokeWidth="14" fill="none" strokeDasharray="540" strokeDashoffset="160" strokeLinecap="round" />
+                  <circle cx="100" cy="100" r="86" stroke="currentColor" className="text-accent" strokeWidth="14" fill="none" strokeDasharray="540" strokeDashoffset="160" strokeLinecap="round" />
                 </svg>
                 <div className="text-center">
                   <div className="font-display text-4xl">70%</div>
@@ -105,7 +111,7 @@ function Hero() {
                 ))}
               </div>
             </div>
-            <div className="absolute -bottom-6 -right-6 rounded-2xl border border-border bg-accent px-4 py-3 text-accent-foreground shadow-xl rotate-3">
+            <div className="absolute -bottom-6 -right-6 rounded-2xl border border-border bg-accent px-4 py-3 text-accent-foreground shadow-xl">
               <div className="font-mono text-[10px] uppercase tracking-wider">offline ready</div>
               <div className="font-display text-lg">No bars? No problem.</div>
             </div>
