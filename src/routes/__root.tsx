@@ -80,11 +80,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "StudyPal — Study smarter, even offline" },
       { name: "description", content: "AI-powered study accountability for African students who work while they study." },
       { name: "author", content: "StudyPal" },
-      { property: "og:title", content: "StudyPal" },
-      { property: "og:description", content: "Upload notes. Get structured lessons, voice playback, and a daily pulse." },
+      { property: "og:title", content: "StudyPal — Study smarter, even offline" },
+      { property: "og:description", content: "AI-powered study accountability for African students who work while they study." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@studypal" },
+      { name: "twitter:title", content: "StudyPal — Study smarter, even offline" },
+      { name: "twitter:description", content: "AI-powered study accountability for African students who work while they study." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5d1cfbbb-ac23-468a-af27-993f27bfdfb5/id-preview-ba7658d4--95520a15-4bea-4cf6-8ca6-38d83863e1c1.lovable.app-1780371328037.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5d1cfbbb-ac23-468a-af27-993f27bfdfb5/id-preview-ba7658d4--95520a15-4bea-4cf6-8ca6-38d83863e1c1.lovable.app-1780371328037.png" },
     ],
     links: [
       {
