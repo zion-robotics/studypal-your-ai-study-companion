@@ -170,8 +170,8 @@ const HOW_STEPS = [
   { t: "Daily Pulse tracks progress", d: "Not motivation quotes — actual coverage data day by day." },
 ];
 
-function HowStep({ index, total, t, d, activeIndex, onEnter }: {
-  index: number; total: number; t: string; d: string; activeIndex: number; onEnter: (i: number) => void;
+function HowStep({ index, t, d, activeIndex, onEnter }: {
+  index: number; t: string; d: string; activeIndex: number; onEnter: (i: number) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { amount: 0.55, margin: "-20% 0px -30% 0px" });
@@ -180,54 +180,72 @@ function HowStep({ index, total, t, d, activeIndex, onEnter }: {
   const reached = index <= activeIndex;
   const isActive = index === activeIndex;
   const isPast = index < activeIndex;
+  const cardOnRight = index % 2 === 0; // 0,2,4 → right
+
+  const circle = (
+    <motion.div
+      initial={false}
+      animate={{ scale: isActive ? 1.06 : 1 }}
+      transition={{ type: "spring", stiffness: 260, damping: 20 }}
+      className={`relative z-10 grid h-14 w-14 place-items-center rounded-full border font-mono text-sm transition-colors duration-500 md:h-[72px] md:w-[72px] md:text-base ${
+        reached ? "border-accent bg-accent text-accent-foreground" : "border-border bg-background text-muted-foreground"
+      } ${isActive ? "shadow-[0_0_0_6px_rgb(13_148_136_/_0.15)]" : ""}`}
+    >
+      0{index + 1}
+    </motion.div>
+  );
+
+  const card = (
+    <motion.div
+      initial={{ opacity: 0, x: cardOnRight ? 40 : -40 }}
+      animate={inView ? { opacity: 1, x: 0 } : { opacity: 0.35, x: cardOnRight ? 12 : -12 }}
+      transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }}
+      className={`rounded-2xl border bg-card/60 p-5 transition-all duration-500 md:p-6 ${
+        isActive
+          ? "border-accent shadow-[0_10px_40px_-20px_rgb(13_148_136_/_0.5)]"
+          : isPast
+          ? "border-border opacity-60"
+          : "border-border/60 opacity-50"
+      }`}
+    >
+      <h3 className={`font-display text-xl leading-tight md:text-2xl ${reached ? "text-foreground" : "text-muted-foreground"}`}>
+        {t}
+      </h3>
+      <p className="mt-2 text-sm text-muted-foreground md:text-base">{d}</p>
+    </motion.div>
+  );
 
   return (
-    <div ref={ref} className="relative grid grid-cols-[56px_1fr] gap-5 pb-16 last:pb-0 md:grid-cols-[72px_1fr] md:gap-8">
-      {/* Vertical line segment to next step */}
-      {index < total - 1 && (
-        <div className="absolute left-[27px] top-14 h-[calc(100%-3.5rem)] w-px overflow-hidden bg-border md:left-[35px]">
-          <motion.div
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: reached ? 1 : 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            style={{ transformOrigin: "top" }}
-            className="h-full w-full bg-accent"
-          />
-        </div>
-      )}
+    <div ref={ref} className="relative pb-16 last:pb-0">
+      {/* MOBILE: single column left=circle, right=card */}
+      <div className="grid grid-cols-[56px_1fr] gap-5 md:hidden">
+        {circle}
+        {card}
+      </div>
 
-      {/* Number circle */}
-      <motion.div
-        initial={false}
-        animate={{ scale: isActive ? 1.06 : 1 }}
-        transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        className={`relative z-10 grid h-14 w-14 place-items-center rounded-full border font-mono text-sm transition-colors duration-500 md:h-[72px] md:w-[72px] md:text-base ${
-          reached
-            ? "border-accent bg-accent text-accent-foreground"
-            : "border-border bg-background text-muted-foreground"
-        } ${isActive ? "shadow-[0_0_0_6px_rgb(13_148_136_/_0.15)]" : ""}`}
-      >
-        0{index + 1}
-      </motion.div>
-
-      {/* Text card */}
-      <motion.div
-        initial={{ opacity: 0, x: -32 }}
-        animate={inView ? { opacity: 1, x: 0 } : { opacity: 0.35, x: -8 }}
-        transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }}
-        className={`rounded-2xl border bg-card/60 p-5 transition-all duration-500 md:p-6 ${
-          isActive
-            ? "border-l-4 border-l-accent border-border shadow-lg"
-            : isPast
-            ? "border-border opacity-60"
-            : "border-border/60 opacity-50"
-        }`}
-      >
-        <h3 className={`font-display text-xl leading-tight md:text-2xl ${reached ? "text-foreground" : "text-muted-foreground"}`}>
-          {t}
-        </h3>
-        <p className="mt-2 text-sm text-muted-foreground md:text-base">{d}</p>
-      </motion.div>
+      {/* DESKTOP: zigzag with center line */}
+      <div className="hidden md:grid md:grid-cols-[1fr_72px_1fr] md:items-center md:gap-8">
+        {cardOnRight ? (
+          <>
+            <div />
+            <div className="flex items-center justify-center">
+              {/* horizontal connector going right */}
+              <div className={`absolute left-1/2 ml-9 h-px w-8 transition-colors duration-500 ${reached ? "bg-accent" : "bg-border"}`} />
+              {circle}
+            </div>
+            <div className="pl-8">{card}</div>
+          </>
+        ) : (
+          <>
+            <div className="flex justify-end pr-8">{card}</div>
+            <div className="flex items-center justify-center">
+              <div className={`absolute right-1/2 mr-9 h-px w-8 transition-colors duration-500 ${reached ? "bg-accent" : "bg-border"}`} />
+              {circle}
+            </div>
+            <div />
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -235,29 +253,31 @@ function HowStep({ index, total, t, d, activeIndex, onEnter }: {
 function HowItWorks() {
   const [activeIndex, setActiveIndex] = useState(0);
   const onEnter = (i: number) => setActiveIndex((cur) => (i > cur ? i : cur));
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start center", "end center"] });
+  const lineScale = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
   return (
     <section id="how" className="border-t border-border bg-card py-24">
-      <div className="mx-auto max-w-4xl px-5">
-        <div className="mb-16 flex items-end justify-between gap-6">
-          <div>
-            <div className="font-mono text-xs text-muted-foreground">02 / THE FLOW</div>
-            <h2 className="mt-3 font-display text-4xl md:text-5xl">How StudyPal works.</h2>
-          </div>
-          <div className="hidden font-mono text-xs text-muted-foreground md:block">— scroll to follow ↓</div>
+      <div className="mx-auto max-w-5xl px-5">
+        <div className="mb-16 text-center">
+          <div className="font-mono text-xs text-muted-foreground">02 / THE FLOW</div>
+          <h2 className="mt-3 font-display text-4xl md:text-5xl">How StudyPal works.</h2>
         </div>
 
-        <div className="relative">
+        <div ref={containerRef} className="relative">
+          {/* Center vertical line — desktop */}
+          <div className="absolute left-[27px] top-0 hidden h-full w-px bg-border md:left-1/2 md:block md:-translate-x-1/2" />
+          {/* Mobile vertical line */}
+          <div className="absolute left-[27px] top-0 h-full w-px bg-border md:hidden" />
+          {/* Active fill */}
+          <motion.div
+            style={{ scaleY: lineScale, transformOrigin: "top" }}
+            className="absolute left-[27px] top-0 h-full w-px bg-accent md:left-1/2 md:-translate-x-1/2"
+          />
+
           {HOW_STEPS.map((s, i) => (
-            <HowStep
-              key={i}
-              index={i}
-              total={HOW_STEPS.length}
-              t={s.t}
-              d={s.d}
-              activeIndex={activeIndex}
-              onEnter={onEnter}
-            />
+            <HowStep key={i} index={i} t={s.t} d={s.d} activeIndex={activeIndex} onEnter={onEnter} />
           ))}
         </div>
       </div>
