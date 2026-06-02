@@ -50,7 +50,7 @@
 
 :root {
   --radius: 0.75rem;
-  /* Warm off-white #F5F0E8, pure black, burnt orange #E85D26, deep secondary #1A1A2E */
+  /* Warm off-white #F5F0E8, pure black, teal #0D9488, deep secondary #1A1A2E */
   --background: oklch(0.953 0.018 75);
   --foreground: oklch(0.12 0 0);
   --card: oklch(0.985 0.012 75);
@@ -63,13 +63,13 @@
   --secondary-foreground: oklch(0.953 0.018 75);
   --muted: oklch(0.91 0.018 75);
   --muted-foreground: oklch(0.42 0.01 75);
-  --accent: oklch(0.66 0.19 38);
+  --accent: oklch(0.62 0.11 184);
   --accent-foreground: oklch(0.98 0.018 75);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.98 0 0);
   --border: oklch(0.86 0.018 75);
   --input: oklch(0.88 0.018 75);
-  --ring: oklch(0.66 0.19 38);
+  --ring: oklch(0.62 0.11 184);
   --sidebar: oklch(0.985 0.012 75);
   --sidebar-foreground: oklch(0.12 0 0);
   --sidebar-primary: oklch(0.12 0 0);
@@ -77,7 +77,7 @@
   --sidebar-accent: oklch(0.91 0.018 75);
   --sidebar-accent-foreground: oklch(0.12 0 0);
   --sidebar-border: oklch(0.86 0.018 75);
-  --sidebar-ring: oklch(0.66 0.19 38);
+  --sidebar-ring: oklch(0.62 0.11 184);
 }
 
 .dark {
@@ -93,21 +93,21 @@
   --secondary-foreground: oklch(0.953 0.018 75);
   --muted: oklch(0.20 0 0);
   --muted-foreground: oklch(0.68 0.01 75);
-  --accent: oklch(0.66 0.19 38);
+  --accent: oklch(0.70 0.12 184);
   --accent-foreground: oklch(0.98 0.018 75);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.98 0 0);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.66 0.19 38);
+  --ring: oklch(0.70 0.12 184);
   --sidebar: oklch(0.12 0 0);
   --sidebar-foreground: oklch(0.953 0.018 75);
-  --sidebar-primary: oklch(0.66 0.19 38);
+  --sidebar-primary: oklch(0.70 0.12 184);
   --sidebar-primary-foreground: oklch(0.98 0.018 75);
   --sidebar-accent: oklch(0.18 0 0);
   --sidebar-accent-foreground: oklch(0.953 0.018 75);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.66 0.19 38);
+  --sidebar-ring: oklch(0.70 0.12 184);
 }
 
 @layer base {
@@ -149,7 +149,7 @@
   .btn-press {
     transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s;
   }
-  .btn-press:hover { transform: translateY(-2px); box-shadow: 0 10px 30px -10px rgb(232 93 38 / 0.5); }
+  .btn-press:hover { transform: translateY(-2px); box-shadow: 0 10px 30px -10px rgb(13 148 136 / 0.5); }
   .btn-press:active { transform: translateY(0); }
 
   @keyframes heartbeat {
