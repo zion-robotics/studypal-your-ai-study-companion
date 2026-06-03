@@ -3,6 +3,7 @@
   "buildCommand": "bun run build",
   "installCommand": "bun install",
   "framework": null,
+  "outputDirectory": ".vercel/output",
   "build": {
     "env": {
       "NITRO_PRESET": "vercel"
