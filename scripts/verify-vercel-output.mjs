@@ -1,5 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
 
+if (process.env.NITRO_PRESET !== "vercel" && !process.env.VERCEL) {
+  console.log("Skipping Vercel Build Output check for non-Vercel build.");
+  process.exit(0);
+}
+
 const required = [
   ".vercel/output/config.json",
   ".vercel/output/functions/__server.func/index.mjs",
