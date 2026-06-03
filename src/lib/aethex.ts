@@ -15,7 +15,7 @@ export const getAethexVoices = createServerFn()
   });
 
 export const createStudyAgent = createServerFn()
-  .validator((data: { subject: string; voiceId: string }) => data)
+  .inputValidator((data: { subject: string; voiceId: string }) => data)
   .handler(async ({ data }) => {
     const { aethexApiKey, aethexBaseUrl } = getServerConfig();
 
@@ -52,7 +52,7 @@ Then ask one comprehension question and wait for the answer.`;
   });
 
 export const startAethexSession = createServerFn()
-  .validator((data: { agentId: string }) => data)
+  .inputValidator((data: { agentId: string }) => data)
   .handler(async ({ data }) => {
     const { aethexApiKey, aethexBaseUrl } = getServerConfig();
     const res = await fetch(`${aethexBaseUrl}/conversation/connect`, {
@@ -66,7 +66,7 @@ export const startAethexSession = createServerFn()
   });
 
 export const sendSdpOffer = createServerFn()
-  .validator((data: { sessionId: string; sdp: string; type: string }) => data)
+  .inputValidator((data: { sessionId: string; sdp: string; type: string }) => data)
   .handler(async ({ data }) => {
     const { aethexApiKey, aethexBaseUrl } = getServerConfig();
     const res = await fetch(`${aethexBaseUrl}/conversation/${data.sessionId}/offer`, {

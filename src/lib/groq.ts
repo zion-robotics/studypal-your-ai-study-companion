@@ -5,7 +5,7 @@ const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 // Server function — key never reaches the browser
 export const groqStructured = createServerFn()
-  .validator((data: { prompt: string; schemaHint?: string }) => data)
+  .inputValidator((data: { prompt: string; schemaHint?: string }) => data)
   .handler(async ({ data }) => {
     const { groqApiKey } = getServerConfig();
 
