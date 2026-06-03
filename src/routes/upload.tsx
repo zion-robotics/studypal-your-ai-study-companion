@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { AppShell } from "@/components/sp/AppShell";
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/upload")({
 
 function Upload() {
   const nav = useNavigate();
+  const structureNotes = useServerFn(groqStructured);
   const [subject, setSubject] = useState("");
   const [notes, setNotes] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -28,10 +30,12 @@ function Upload() {
       "Quick recap & retention check",
     ];
     try {
-      const r = await groqStructured<{ topics: string[] }>(
-        `Structure these notes into 5–7 ordered lesson topics. Subject: ${subject}. Notes: ${notes.slice(0, 4000)}`,
-        "Return { topics: string[] }"
-      );
+      const r = await structureNotes({
+        data: {
+          prompt: `Structure these notes into 5–7 ordered lesson topics. Subject: ${subject}. Notes: ${notes.slice(0, 4000)}`,
+          schemaHint: "Return { topics: string[] }",
+        },
+      });
       setTopics(Array.isArray((r as any).topics) ? (r as any).topics : fallback);
     } catch { setTopics(fallback); }
     setTimeout(() => setStatus("ready"), 800);
