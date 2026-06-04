@@ -130,9 +130,27 @@ function Signup() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             {[
-              { label: "Full name", type: "text", value: name, setter: setName, placeholder: "Amara Okeke" },
-              { label: "Email address", type: "email", value: email, setter: setEmail, placeholder: "you@school.edu.ng" },
-              { label: "Password", type: "password", value: password, setter: setPassword, placeholder: "At least 8 characters" },
+              {
+                label: "Full name",
+                type: "text",
+                value: name,
+                setter: setName,
+                placeholder: "Amara Okeke",
+              },
+              {
+                label: "Email address",
+                type: "email",
+                value: email,
+                setter: setEmail,
+                placeholder: "you@school.edu.ng",
+              },
+              {
+                label: "Password",
+                type: "password",
+                value: password,
+                setter: setPassword,
+                placeholder: "At least 8 characters",
+              },
             ].map((field) => (
               <div key={field.label}>
                 <label className="font-mono block text-xs uppercase tracking-widest text-muted-foreground">
@@ -158,8 +176,19 @@ function Signup() {
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
                   </svg>
                   Creating your account...
                 </span>
@@ -179,7 +208,10 @@ function Signup() {
           {/* Footer link */}
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/login" className="font-semibold text-accent underline-offset-4 hover:underline">
+            <Link
+              to="/login"
+              className="font-semibold text-accent underline-offset-4 hover:underline"
+            >
               Log in
             </Link>
           </p>
@@ -187,7 +219,10 @@ function Signup() {
           {/* Trust badges */}
           <div className="mt-8 flex items-center justify-center gap-4 opacity-50">
             {["UNILAG", "LASU", "UI", "FUNAAB", "ABU"].map((school) => (
-              <span key={school} className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              <span
+                key={school}
+                className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground"
+              >
                 {school}
               </span>
             ))}

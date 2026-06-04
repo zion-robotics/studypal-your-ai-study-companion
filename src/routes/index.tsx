@@ -8,10 +8,23 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "StudyPal — The study pal every African student always needed" },
-      { name: "description", content: "Upload your notes. StudyPal structures them, reads them aloud, quizzes you, and keeps you on track — even without internet." },
-      { property: "og:title", content: "StudyPal — Built for African students who study while they work" },
-      { property: "og:description", content: "AI-powered study accountability that works offline." },
-      { property: "og:image", content: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&q=80" },
+      {
+        name: "description",
+        content:
+          "Upload your notes. StudyPal structures them, reads them aloud, quizzes you, and keeps you on track — even without internet.",
+      },
+      {
+        property: "og:title",
+        content: "StudyPal — Built for African students who study while they work",
+      },
+      {
+        property: "og:description",
+        content: "AI-powered study accountability that works offline.",
+      },
+      {
+        property: "og:image",
+        content: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&q=80",
+      },
     ],
   }),
   component: Landing,
@@ -37,7 +50,11 @@ function Hero() {
     <section ref={ref} className="relative isolate overflow-hidden">
       {/* parallax bg */}
       <motion.div style={{ y: yBg }} className="absolute inset-0 -z-10">
-        <img src={HERO_IMG} alt="" className="h-full w-full object-cover opacity-60 dark:opacity-35" />
+        <img
+          src={HERO_IMG}
+          alt=""
+          className="h-full w-full object-cover opacity-60 dark:opacity-35"
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/55 to-background" />
       </motion.div>
 
@@ -55,12 +72,28 @@ function Hero() {
             you on track — even without internet.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link to="/signup" className="btn-press inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-medium text-accent-foreground">
+            <Link
+              to="/signup"
+              className="btn-press inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-medium text-accent-foreground"
+            >
               Start Studying Free
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M5 12h14M13 5l7 7-7 7" />
+              </svg>
             </Link>
-            <a href="#how" className="btn-press inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3.5 text-sm font-medium">
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <a
+              href="#how"
+              className="btn-press inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3.5 text-sm font-medium"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+                <path d="M8 5v14l11-7z" />
+              </svg>
               Watch Demo
             </a>
           </div>
@@ -90,23 +123,48 @@ function Hero() {
               </div>
               <div className="relative mx-auto my-2 grid h-44 w-44 place-items-center">
                 <svg viewBox="0 0 200 200" className="absolute inset-0 -rotate-90">
-                  <circle cx="100" cy="100" r="86" stroke="currentColor" className="text-muted" strokeWidth="14" fill="none" />
-                  <circle cx="100" cy="100" r="86" stroke="currentColor" className="text-accent" strokeWidth="14" fill="none" strokeDasharray="540" strokeDashoffset="160" strokeLinecap="round" />
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r="86"
+                    stroke="currentColor"
+                    className="text-muted"
+                    strokeWidth="14"
+                    fill="none"
+                  />
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r="86"
+                    stroke="currentColor"
+                    className="text-accent"
+                    strokeWidth="14"
+                    fill="none"
+                    strokeDasharray="540"
+                    strokeDashoffset="160"
+                    strokeLinecap="round"
+                  />
                 </svg>
                 <div className="text-center">
                   <div className="font-display text-4xl">70%</div>
-                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">today</div>
+                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    today
+                  </div>
                 </div>
               </div>
               <div className="mt-2 rounded-xl bg-muted p-3">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Next up</div>
+                <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Next up
+                </div>
                 <div className="mt-1 text-sm font-medium">Cellular Respiration · 12 min</div>
               </div>
               <div className="mt-3 grid grid-cols-3 gap-2 text-center">
                 {["7 day", "92%", "26 left"].map((s, i) => (
                   <div key={i} className="rounded-lg border border-border p-2">
                     <div className="font-mono text-sm">{s}</div>
-                    <div className="text-[10px] text-muted-foreground">{["streak","avg","days"][i]}</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      {["streak", "avg", "days"][i]}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -122,7 +180,17 @@ function Hero() {
   );
 }
 
-function ProblemCard({ title, desc, n, delay }: { title: string; desc: string; n: string; delay: number }) {
+function ProblemCard({
+  title,
+  desc,
+  n,
+  delay,
+}: {
+  title: string;
+  desc: string;
+  n: string;
+  delay: number;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -150,12 +218,29 @@ function Problem() {
       <div className="mx-auto max-w-7xl px-5">
         <div className="mb-14 max-w-2xl">
           <div className="font-mono text-xs text-muted-foreground">01 / THE REALITY</div>
-          <h2 className="mt-3 font-display text-4xl md:text-5xl">3 reasons African students fall behind.</h2>
+          <h2 className="mt-3 font-display text-4xl md:text-5xl">
+            3 reasons African students fall behind.
+          </h2>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
-          <ProblemCard n="01" delay={0} title="Inconsistent internet." desc="NEPA goes. Data finishes. Your study app shouldn't punish you for that." />
-          <ProblemCard n="02" delay={0.1} title="No one checking on you." desc="Self-study is lonely. Without accountability, weeks blur into nothing." />
-          <ProblemCard n="03" delay={0.2} title="Life gets in the way." desc="You work, you commute, you cook. Most planners weren't built for that." />
+          <ProblemCard
+            n="01"
+            delay={0}
+            title="Inconsistent internet."
+            desc="NEPA goes. Data finishes. Your study app shouldn't punish you for that."
+          />
+          <ProblemCard
+            n="02"
+            delay={0.1}
+            title="No one checking on you."
+            desc="Self-study is lonely. Without accountability, weeks blur into nothing."
+          />
+          <ProblemCard
+            n="03"
+            delay={0.2}
+            title="Life gets in the way."
+            desc="You work, you commute, you cook. Most planners weren't built for that."
+          />
         </div>
       </div>
     </section>
@@ -163,19 +248,43 @@ function Problem() {
 }
 
 const HOW_STEPS = [
-  { t: "Upload your notes or PDF", d: "Drop in lecture notes, JAMB past questions, or your tutor's deck." },
-  { t: "AI structures your content", d: "Groq + Aethex turn raw text into ordered, bite-size lessons." },
-  { t: "StudyPal reads it aloud", d: "Hands-free learning while you commute, cook or close the shop." },
+  {
+    t: "Upload your notes or PDF",
+    d: "Drop in lecture notes, JAMB past questions, or your tutor's deck.",
+  },
+  {
+    t: "AI structures your content",
+    d: "Groq + Aethex turn raw text into ordered, bite-size lessons.",
+  },
+  {
+    t: "StudyPal reads it aloud",
+    d: "Hands-free learning while you commute, cook or close the shop.",
+  },
   { t: "Voice comprehension check", d: "Three quick questions. Speak or tap. Real understanding." },
-  { t: "Daily Pulse tracks progress", d: "Not motivation quotes — actual coverage data day by day." },
+  {
+    t: "Daily Pulse tracks progress",
+    d: "Not motivation quotes — actual coverage data day by day.",
+  },
 ];
 
-function HowStep({ index, t, d, activeIndex, onEnter }: {
-  index: number; t: string; d: string; activeIndex: number; onEnter: (i: number) => void;
+function HowStep({
+  index,
+  t,
+  d,
+  activeIndex,
+  onEnter,
+}: {
+  index: number;
+  t: string;
+  d: string;
+  activeIndex: number;
+  onEnter: (i: number) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { amount: 0.55, margin: "-20% 0px -30% 0px" });
-  useEffect(() => { if (inView) onEnter(index); }, [inView, index, onEnter]);
+  useEffect(() => {
+    if (inView) onEnter(index);
+  }, [inView, index, onEnter]);
 
   const reached = index <= activeIndex;
   const isActive = index === activeIndex;
@@ -188,7 +297,9 @@ function HowStep({ index, t, d, activeIndex, onEnter }: {
       animate={{ scale: isActive ? 1.06 : 1 }}
       transition={{ type: "spring", stiffness: 260, damping: 20 }}
       className={`relative z-10 grid h-14 w-14 place-items-center rounded-full border font-mono text-sm transition-colors duration-500 md:h-[72px] md:w-[72px] md:text-base ${
-        reached ? "border-accent bg-accent text-accent-foreground" : "border-border bg-background text-muted-foreground"
+        reached
+          ? "border-accent bg-accent text-accent-foreground"
+          : "border-border bg-background text-muted-foreground"
       } ${isActive ? "shadow-[0_0_0_6px_rgb(13_148_136_/_0.15)]" : ""}`}
     >
       0{index + 1}
@@ -204,11 +315,13 @@ function HowStep({ index, t, d, activeIndex, onEnter }: {
         isActive
           ? "border-accent shadow-[0_10px_40px_-20px_rgb(13_148_136_/_0.5)]"
           : isPast
-          ? "border-border opacity-60"
-          : "border-border/60 opacity-50"
+            ? "border-border opacity-60"
+            : "border-border/60 opacity-50"
       }`}
     >
-      <h3 className={`font-display text-xl leading-tight md:text-2xl ${reached ? "text-foreground" : "text-muted-foreground"}`}>
+      <h3
+        className={`font-display text-xl leading-tight md:text-2xl ${reached ? "text-foreground" : "text-muted-foreground"}`}
+      >
         {t}
       </h3>
       <p className="mt-2 text-sm text-muted-foreground md:text-base">{d}</p>
@@ -230,7 +343,9 @@ function HowStep({ index, t, d, activeIndex, onEnter }: {
             <div />
             <div className="flex items-center justify-center">
               {/* horizontal connector going right */}
-              <div className={`absolute left-1/2 ml-9 h-px w-8 transition-colors duration-500 ${reached ? "bg-accent" : "bg-border"}`} />
+              <div
+                className={`absolute left-1/2 ml-9 h-px w-8 transition-colors duration-500 ${reached ? "bg-accent" : "bg-border"}`}
+              />
               {circle}
             </div>
             <div className="pl-8">{card}</div>
@@ -239,7 +354,9 @@ function HowStep({ index, t, d, activeIndex, onEnter }: {
           <>
             <div className="flex justify-end pr-8">{card}</div>
             <div className="flex items-center justify-center">
-              <div className={`absolute right-1/2 mr-9 h-px w-8 transition-colors duration-500 ${reached ? "bg-accent" : "bg-border"}`} />
+              <div
+                className={`absolute right-1/2 mr-9 h-px w-8 transition-colors duration-500 ${reached ? "bg-accent" : "bg-border"}`}
+              />
               {circle}
             </div>
             <div />
@@ -254,7 +371,10 @@ function HowItWorks() {
   const [activeIndex, setActiveIndex] = useState(0);
   const onEnter = (i: number) => setActiveIndex((cur) => (i > cur ? i : cur));
   const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start center", "end center"] });
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start center", "end center"],
+  });
   const lineScale = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
   return (
@@ -277,7 +397,14 @@ function HowItWorks() {
           />
 
           {HOW_STEPS.map((s, i) => (
-            <HowStep key={i} index={i} t={s.t} d={s.d} activeIndex={activeIndex} onEnter={onEnter} />
+            <HowStep
+              key={i}
+              index={i}
+              t={s.t}
+              d={s.d}
+              activeIndex={activeIndex}
+              onEnter={onEnter}
+            />
           ))}
         </div>
       </div>
@@ -287,12 +414,42 @@ function HowItWorks() {
 
 function Features() {
   const items = [
-    { t: "Voice Lessons", d: "AI reads your content aloud, hands-free.", s: "10–15 min sessions", icon: "M3 11v2a4 4 0 0 0 4 4h0M17 11v2a4 4 0 0 1-4 4h0M9 7h6v8H9z" },
-    { t: "Smart Study Planner", d: "Personalized micro-sessions around your real schedule.", s: "Adapts daily", icon: "M8 2v4M16 2v4M3 10h18M5 6h14a2 2 0 0 1 2 2v12H3V8a2 2 0 0 1 2-2Z" },
-    { t: "Comprehension Checks", d: "Three questions after every session, instant feedback.", s: "3 Q / lesson", icon: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
-    { t: "Daily Pulse", d: "Real progress data, not motivational quotes.", s: "Heartbeat ring", icon: "M22 12h-4l-3 9L9 3l-3 9H2" },
-    { t: "Offline Mode", d: "Works without internet after first load.", s: "0 MB / session", icon: "M5 12.55a11 11 0 0 1 14.08 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" },
-    { t: "Life Happened Mode", d: "Missed days? Plan adapts. Zero guilt-tripping.", s: "Replans in 1s", icon: "M3 12a9 9 0 1 0 9-9M3 3v6h6" },
+    {
+      t: "Voice Lessons",
+      d: "AI reads your content aloud, hands-free.",
+      s: "10–15 min sessions",
+      icon: "M3 11v2a4 4 0 0 0 4 4h0M17 11v2a4 4 0 0 1-4 4h0M9 7h6v8H9z",
+    },
+    {
+      t: "Smart Study Planner",
+      d: "Personalized micro-sessions around your real schedule.",
+      s: "Adapts daily",
+      icon: "M8 2v4M16 2v4M3 10h18M5 6h14a2 2 0 0 1 2 2v12H3V8a2 2 0 0 1 2-2Z",
+    },
+    {
+      t: "Comprehension Checks",
+      d: "Three questions after every session, instant feedback.",
+      s: "3 Q / lesson",
+      icon: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11",
+    },
+    {
+      t: "Daily Pulse",
+      d: "Real progress data, not motivational quotes.",
+      s: "Heartbeat ring",
+      icon: "M22 12h-4l-3 9L9 3l-3 9H2",
+    },
+    {
+      t: "Offline Mode",
+      d: "Works without internet after first load.",
+      s: "0 MB / session",
+      icon: "M5 12.55a11 11 0 0 1 14.08 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01",
+    },
+    {
+      t: "Life Happened Mode",
+      d: "Missed days? Plan adapts. Zero guilt-tripping.",
+      s: "Replans in 1s",
+      icon: "M3 12a9 9 0 1 0 9-9M3 3v6h6",
+    },
   ];
   return (
     <section id="features" className="relative border-t border-border py-24">
@@ -316,7 +473,17 @@ function Features() {
               className="tilt-card group rounded-3xl border border-border bg-card p-7"
             >
               <div className="mb-6 grid h-12 w-12 place-items-center rounded-xl bg-accent text-accent-foreground">
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={f.icon}/></svg>
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d={f.icon} />
+                </svg>
               </div>
               <h3 className="font-display text-xl">{f.t}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{f.d}</p>
@@ -331,16 +498,36 @@ function Features() {
   );
 }
 
-function Counter({ value, suffix = "", duration = 1400 }: { value: number; suffix?: string; duration?: number }) {
+function Counter({
+  value,
+  suffix = "",
+  duration = 1400,
+}: {
+  value: number;
+  suffix?: string;
+  duration?: number;
+}) {
   const [start, setStart] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
-    const el = ref.current; if (!el) return;
-    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) setStart(true); }, { threshold: 0.4 });
-    io.observe(el); return () => io.disconnect();
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) setStart(true);
+      },
+      { threshold: 0.4 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
   const v = useCountUp(value, duration, start);
-  return <span ref={ref} className="font-mono tabular-nums">{Math.round(v)}{suffix}</span>;
+  return (
+    <span ref={ref} className="font-mono tabular-nums">
+      {Math.round(v)}
+      {suffix}
+    </span>
+  );
 }
 
 function Stats() {
@@ -357,7 +544,9 @@ function Stats() {
             <div className="font-display text-6xl md:text-7xl">
               <Counter value={s.n} suffix={s.s} />
             </div>
-            <div className="mt-3 font-mono text-xs uppercase tracking-widest text-white/60">{s.label}</div>
+            <div className="mt-3 font-mono text-xs uppercase tracking-widest text-white/60">
+              {s.label}
+            </div>
           </div>
         ))}
       </div>
@@ -367,9 +556,25 @@ function Stats() {
 
 function Testimonials() {
   const items = [
-    { name: "Tunde", role: "LASU 300L", avatar: AV1, quote: "I work 6 days a week. StudyPal reads my notes while I'm on the bus. I'm finally caught up." },
-    { name: "Amaka", role: "UNILAG Postgrad", avatar: AV2, quote: "The Daily Pulse is honest. It tells me when I'm slacking — no fake motivation." },
-    { name: "Emeka", role: "Working + Studying", avatar: AV3, quote: "Internet here is unstable. StudyPal just works. That alone is everything." },
+    {
+      name: "Tunde",
+      role: "LASU 300L",
+      avatar: AV1,
+      quote:
+        "I work 6 days a week. StudyPal reads my notes while I'm on the bus. I'm finally caught up.",
+    },
+    {
+      name: "Amaka",
+      role: "UNILAG Postgrad",
+      avatar: AV2,
+      quote: "The Daily Pulse is honest. It tells me when I'm slacking — no fake motivation.",
+    },
+    {
+      name: "Emeka",
+      role: "Working + Studying",
+      avatar: AV3,
+      quote: "Internet here is unstable. StudyPal just works. That alone is everything.",
+    },
   ];
   return (
     <section id="testimonials" className="border-t border-border py-24">
@@ -408,17 +613,34 @@ function FinalCTA() {
   return (
     <section className="relative isolate overflow-hidden border-t border-border py-32">
       <div className="absolute inset-0 -z-10">
-        <img src={COMMUNITY_IMG} alt="" className="h-full w-full object-cover opacity-20 dark:opacity-15" />
+        <img
+          src={COMMUNITY_IMG}
+          alt=""
+          className="h-full w-full object-cover opacity-20 dark:opacity-15"
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background/70 to-background" />
       </div>
       <div className="mx-auto max-w-3xl px-5 text-center">
         <h2 className="font-display text-4xl md:text-6xl leading-[1.05]">
           Stop falling behind. Start building <span className="text-accent">consistency.</span>
         </h2>
-        <p className="mt-6 text-lg text-muted-foreground">Join the first batch of students using StudyPal to actually finish what they started.</p>
-        <Link to="/signup" className="btn-press mt-10 inline-flex items-center gap-2 rounded-full bg-accent px-8 py-4 text-base font-medium text-accent-foreground">
+        <p className="mt-6 text-lg text-muted-foreground">
+          Join the first batch of students using StudyPal to actually finish what they started.
+        </p>
+        <Link
+          to="/signup"
+          className="btn-press mt-10 inline-flex items-center gap-2 rounded-full bg-accent px-8 py-4 text-base font-medium text-accent-foreground"
+        >
           Create Your Free Account
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          <svg
+            viewBox="0 0 24 24"
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M5 12h14M13 5l7 7-7 7" />
+          </svg>
         </Link>
       </div>
     </section>
@@ -431,13 +653,23 @@ function Footer() {
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-5 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="font-display text-2xl">StudyPal</div>
-          <div className="mt-2 max-w-sm text-sm text-muted-foreground">The study pal every African student always needed.</div>
+          <div className="mt-2 max-w-sm text-sm text-muted-foreground">
+            The study pal every African student always needed.
+          </div>
         </div>
         <nav className="flex flex-wrap gap-6 text-sm text-muted-foreground">
-          <a href="#problem" className="hover:text-foreground">About</a>
-          <a href="#features" className="hover:text-foreground">Features</a>
-          <a href="#how" className="hover:text-foreground">Hackathon</a>
-          <a href="mailto:hello@studypal.app" className="hover:text-foreground">Contact</a>
+          <a href="#problem" className="hover:text-foreground">
+            About
+          </a>
+          <a href="#features" className="hover:text-foreground">
+            Features
+          </a>
+          <a href="#how" className="hover:text-foreground">
+            Hackathon
+          </a>
+          <a href="mailto:hello@studypal.app" className="hover:text-foreground">
+            Contact
+          </a>
         </nav>
       </div>
       <div className="mx-auto mt-10 max-w-7xl border-t border-border px-5 pt-6 font-mono text-xs text-muted-foreground">

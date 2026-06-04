@@ -98,15 +98,11 @@ function Login() {
           className="mx-auto w-full max-w-sm"
         >
           <div className="mb-8">
-            <p className="font-mono text-xs uppercase tracking-widest text-accent">
-              Welcome back
-            </p>
+            <p className="font-mono text-xs uppercase tracking-widest text-accent">Welcome back</p>
             <h1 className="font-display mt-2 text-4xl font-semibold tracking-tight">
               Pick up where you left off.
             </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Your streak is waiting.
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">Your streak is waiting.</p>
           </div>
 
           {error && (
@@ -164,8 +160,19 @@ function Login() {
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
                   </svg>
                   Logging you in...
                 </span>
@@ -183,14 +190,20 @@ function Login() {
 
           <p className="text-center text-sm text-muted-foreground">
             New to StudyPal?{" "}
-            <Link to="/signup" className="font-semibold text-accent underline-offset-4 hover:underline">
+            <Link
+              to="/signup"
+              className="font-semibold text-accent underline-offset-4 hover:underline"
+            >
               Create a free account
             </Link>
           </p>
 
           <div className="mt-8 flex items-center justify-center gap-4 opacity-50">
             {["UNILAG", "LASU", "UI", "FUNAAB", "ABU"].map((school) => (
-              <span key={school} className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              <span
+                key={school}
+                className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground"
+              >
                 {school}
               </span>
             ))}

@@ -37,7 +37,9 @@ export function TopNav() {
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [open]);
 
   return (
@@ -53,11 +55,18 @@ export function TopNav() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5">
           <Logo />
           <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">
-            {NAV_LINKS.map((l) => <NavLink key={l.href} {...l} />)}
+            {NAV_LINKS.map((l) => (
+              <NavLink key={l.href} {...l} />
+            ))}
           </nav>
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <Link to="/login" className="hidden text-sm font-medium text-foreground hover:text-accent md:inline">Log in</Link>
+            <Link
+              to="/login"
+              className="hidden text-sm font-medium text-foreground hover:text-accent md:inline"
+            >
+              Log in
+            </Link>
             <Link
               to="/signup"
               className="btn-press hidden rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground shadow-[0_0_0_0_rgb(13_148_136_/_0)] transition-shadow duration-300 hover:shadow-[0_0_24px_-4px_rgb(13_148_136_/_0.7)] md:inline-flex"
@@ -69,8 +78,22 @@ export function TopNav() {
               onClick={() => setOpen((o) => !o)}
               className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card md:hidden"
             >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                {open ? <path d="M6 6l12 12M18 6L6 18" /> : <><path d="M4 7h16" /><path d="M4 17h16" /></>}
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
+                {open ? (
+                  <path d="M6 6l12 12M18 6L6 18" />
+                ) : (
+                  <>
+                    <path d="M4 7h16" />
+                    <path d="M4 17h16" />
+                  </>
+                )}
               </svg>
             </button>
           </div>
@@ -112,7 +135,13 @@ export function TopNav() {
                 transition={{ delay: 0.05 + NAV_LINKS.length * 0.06, duration: 0.4 }}
                 className="mt-6 flex flex-col items-center gap-3"
               >
-                <Link to="/login" onClick={() => setOpen(false)} className="text-sm font-medium text-muted-foreground">Log in</Link>
+                <Link
+                  to="/login"
+                  onClick={() => setOpen(false)}
+                  className="text-sm font-medium text-muted-foreground"
+                >
+                  Log in
+                </Link>
                 <Link
                   to="/signup"
                   onClick={() => setOpen(false)}

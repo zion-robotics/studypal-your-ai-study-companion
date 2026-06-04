@@ -19,7 +19,10 @@ export function stopSpeaking() {
 export function listen(onResult: (text: string) => void, onEnd?: () => void) {
   if (typeof window === "undefined") return () => {};
   const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-  if (!SR) { onEnd?.(); return () => {}; }
+  if (!SR) {
+    onEnd?.();
+    return () => {};
+  }
   const rec = new SR();
   rec.lang = "en-US";
   rec.interimResults = false;

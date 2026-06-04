@@ -3,16 +3,15 @@ import { getServerConfig } from "./config.server";
 
 // ─── Server-side helpers (API key never reaches browser) ───────────────────
 
-export const getAethexVoices = createServerFn()
-  .handler(async () => {
-    const { aethexApiKey, aethexBaseUrl } = getServerConfig();
-    const res = await fetch(`${aethexBaseUrl}/voices?language=english`, {
-      headers: { "X-API-Key": aethexApiKey!, "Content-Type": "application/json" },
-    });
-    if (!res.ok) throw new Error(`Failed to fetch voices: ${res.status}`);
-    const voices = await res.json();
-    return voices.filter((v: any) => !v.is_cloned) as { id: string; name: string }[];
+export const getAethexVoices = createServerFn().handler(async () => {
+  const { aethexApiKey, aethexBaseUrl } = getServerConfig();
+  const res = await fetch(`${aethexBaseUrl}/voices?language=english`, {
+    headers: { "X-API-Key": aethexApiKey!, "Content-Type": "application/json" },
   });
+  if (!res.ok) throw new Error(`Failed to fetch voices: ${res.status}`);
+  const voices = await res.json();
+  return voices.filter((v: any) => !v.is_cloned) as { id: string; name: string }[];
+});
 
 export const createStudyAgent = createServerFn()
   .inputValidator((data: { subject: string; voiceId: string }) => data)

@@ -20,7 +20,9 @@ if (missing.length > 0) {
 
 const config = JSON.parse(readFileSync(".vercel/output/config.json", "utf8"));
 const routes = Array.isArray(config.routes) ? config.routes : [];
-const hasServerFallback = routes.some((route) => route?.src === "/(.*)" && route?.dest === "/__server");
+const hasServerFallback = routes.some(
+  (route) => route?.src === "/(.*)" && route?.dest === "/__server",
+);
 if (!hasServerFallback) {
   console.error("Vercel output is missing the catch-all route to /__server.");
   process.exit(1);

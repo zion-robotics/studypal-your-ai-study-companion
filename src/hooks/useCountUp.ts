@@ -14,7 +14,9 @@ export function useCountUp(target: number, durationMs = 1400, start = true) {
       if (p < 1) raf.current = requestAnimationFrame(tick);
     };
     raf.current = requestAnimationFrame(tick);
-    return () => { if (raf.current) cancelAnimationFrame(raf.current); };
+    return () => {
+      if (raf.current) cancelAnimationFrame(raf.current);
+    };
   }, [target, durationMs, start]);
   return value;
 }
