@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { TopNav } from "@/components/sp/TopNav";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -68,8 +69,8 @@ function Hero() {
             The study pal every <span className="text-accent">African student</span> always needed.
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-            Upload your notes. StudyPal structures them, reads them aloud, quizzes you, and keeps
-            you on track — even without internet.
+            Whether you're in university juggling work and school, or preparing for JAMB, WAEC, or
+            NECO — StudyPal keeps you consistent, even without internet.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
