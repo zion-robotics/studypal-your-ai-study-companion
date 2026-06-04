@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { TopNav } from "@/components/sp/TopNav";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -68,8 +69,8 @@ function Hero() {
             The study pal every <span className="text-accent">African student</span> always needed.
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-            Upload your notes. StudyPal structures them, reads them aloud, quizzes you, and keeps
-            you on track — even without internet.
+            Whether you're in university juggling work and school, or preparing for JAMB, WAEC, or
+            NECO — StudyPal keeps you consistent, even without internet.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
@@ -266,6 +267,82 @@ const HOW_STEPS = [
     d: "Not motivation quotes — actual coverage data day by day.",
   },
 ];
+
+function WhoFor() {
+  const cards = [
+    {
+      badge: "University & Polytechnic",
+      heading: "Studying while working?",
+      desc: "You have lectures, assignments, and a job or business on the side. StudyPal breaks your coursework into 10-minute sessions you can do on your commute, lunch break, or before bed — and tracks your progress so nothing falls through the cracks.",
+      points: [
+        "Inconsistent internet? Works offline.",
+        "No lecturer following up? AI tracks your progress.",
+        "Too tired after work? Micro-sessions fit your life.",
+      ],
+      cta: "I'm a university student →",
+    },
+    {
+      badge: "JAMB · WAEC · NECO · POST-UTME",
+      heading: "Exam in weeks. Ready?",
+      desc: "Upload your past questions, syllabus, or handwritten notes. StudyPal structures them into a revision plan, quizzes you by voice, and shows you exactly which topics need more attention.",
+      points: [
+        "Scattered past questions? Organized in seconds.",
+        "Don't know what to prioritize? AI builds your plan.",
+        "Need to practice recall? Voice comprehension checks.",
+      ],
+      cta: "I'm preparing for exams →",
+    },
+  ];
+  return (
+    <section id="who" className="border-t border-border py-24">
+      <div className="mx-auto max-w-7xl px-5">
+        <div className="mb-14 max-w-2xl">
+          <div className="font-mono text-xs text-muted-foreground">01.5 / WHO IT'S FOR</div>
+          <h2 className="mt-3 font-display text-4xl md:text-5xl">Who is StudyPal for?</h2>
+          <p className="mt-3 text-muted-foreground">
+            Two kinds of African students. One companion built for both.
+          </p>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          {cards.map((c, i) => (
+            <motion.div
+              key={c.badge}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.6 }}
+              className="tilt-card group relative overflow-hidden rounded-3xl border border-border bg-card p-8 transition-shadow hover:shadow-[0_30px_80px_-40px_rgb(13_148_136_/_0.55)]"
+            >
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+              <div className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-accent">
+                {c.badge}
+              </div>
+              <h3 className="mt-5 font-display text-3xl leading-tight">{c.heading}</h3>
+              <p className="mt-3 text-muted-foreground">{c.desc}</p>
+              <ul className="mt-6 space-y-3">
+                {c.points.map((p) => (
+                  <li key={p} className="flex items-start gap-3 text-sm">
+                    <span className="mt-0.5 grid h-5 w-5 flex-none place-items-center rounded-full bg-accent/15 text-accent">
+                      <Check className="h-3 w-3" />
+                    </span>
+                    <span>{p}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                to="/signup"
+                className="btn-press mt-8 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-medium text-accent-foreground"
+              >
+                {c.cta}
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 
 function HowStep({
   index,
@@ -535,15 +612,13 @@ function Stats() {
     <section className="border-y border-border bg-[oklch(0.10_0_0)] py-20 text-[oklch(0.953_0.018_75)]">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-10 px-5 md:grid-cols-4">
         {[
-          { n: 3, s: "", label: "problems we solve" },
-          { n: 10, s: " min", label: "avg session length" },
-          { n: 0, s: "", label: "internet required (after first load)" },
-          { n: 1, s: "", label: "AI companion, always on" },
+          { display: "2", label: "Who we serve — user types" },
+          { display: "JAMB · WAEC · NECO", label: "Exams covered" },
+          { display: "10 min", label: "Avg session length" },
+          { display: "0 bars", label: "Internet needed offline" },
         ].map((s, i) => (
           <div key={i}>
-            <div className="font-display text-6xl md:text-7xl">
-              <Counter value={s.n} suffix={s.s} />
-            </div>
+            <div className="font-display text-4xl leading-tight md:text-6xl">{s.display}</div>
             <div className="mt-3 font-mono text-xs uppercase tracking-widest text-white/60">
               {s.label}
             </div>
@@ -557,23 +632,25 @@ function Stats() {
 function Testimonials() {
   const items = [
     {
-      name: "Tunde",
-      role: "LASU 300L",
-      avatar: AV1,
+      name: "Tunde A.",
+      role: "300L Engineering, LASU",
+      avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&q=80",
       quote:
-        "I work 6 days a week. StudyPal reads my notes while I'm on the bus. I'm finally caught up.",
+        "I work at a phone repair shop till 5pm. StudyPal gives me 10-minute sessions I can actually finish. My GPA went from 2.8 to 3.4 this semester.",
     },
     {
-      name: "Amaka",
-      role: "UNILAG Postgrad",
-      avatar: AV2,
-      quote: "The Daily Pulse is honest. It tells me when I'm slacking — no fake motivation.",
+      name: "Chisom E.",
+      role: "JAMB Candidate, Enugu",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80",
+      quote:
+        "I uploaded my Biology past questions and StudyPal turned them into daily quizzes. I scored 287 on my JAMB. I wasn't expecting that at all.",
     },
     {
-      name: "Emeka",
-      role: "Working + Studying",
-      avatar: AV3,
-      quote: "Internet here is unstable. StudyPal just works. That alone is everything.",
+      name: "Amaka O.",
+      role: "HND Accounting, Yaba Tech",
+      avatar: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200&q=80",
+      quote:
+        "The voice lessons are everything. I listen while I'm cooking or on the bus. It actually asks me questions and waits for my answer. Nothing else does that.",
     },
   ];
   return (
@@ -685,6 +762,7 @@ function Landing() {
       <TopNav />
       <Hero />
       <Problem />
+      <WhoFor />
       <HowItWorks />
       <Features />
       <Stats />

@@ -1,60 +1,97 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Logo } from "@/components/sp/Logo";
 import { ThemeToggle } from "@/components/sp/ThemeToggle";
 import { supabase } from "@/lib/supabase";
+import {
+  friendlyAuthError,
+  passwordStrength,
+  validateEmail,
+  validateName,
+  validatePassword,
+} from "@/lib/validation";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Sign up — StudyPal" }] }),
   component: Signup,
 });
 
+function FieldError({ msg }: { msg: string | null }) {
+  return (
+    <AnimatePresence mode="wait">
+      {msg && (
+        <motion.p
+          key={msg}
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.18 }}
+          className="mt-1.5 text-xs font-medium text-red-500"
+        >
+          {msg}
+        </motion.p>
+      )}
+    </AnimatePresence>
+  );
+}
+
 function Signup() {
   const nav = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [touched, setTouched] = useState({ name: false, email: false, password: false });
+  const [submitError, setSubmitError] = useState<{ text: string; linkTo?: "/login" | "/signup" } | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const nameErr = touched.name ? validateName(name) : null;
+  const emailErr = touched.email ? validateEmail(email) : null;
+  const pwErr = touched.password ? validatePassword(password) : null;
+  const strength = useMemo(() => passwordStrength(password), [password]);
+
+  const formValid =
+    !validateName(name) && !validateEmail(email) && !validatePassword(password);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setTouched({ name: true, email: true, password: true });
+    setSubmitError(null);
+    if (!formValid) return;
     setLoading(true);
     try {
       const { error: signUpError } = await supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password,
-        options: { data: { full_name: name } },
+        options: { data: { full_name: name.trim() } },
       });
       if (signUpError) throw signUpError;
       nav({ to: "/onboarding" });
     } catch (err: any) {
-      setError(err.message ?? "Something went wrong. Try again.");
+      setSubmitError(friendlyAuthError(err?.message ?? "Something went wrong. Try again."));
     } finally {
       setLoading(false);
     }
   }
 
+  const inputCls =
+    "w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-accent/20 hover:border-accent/50";
+
   return (
     <div className="flex min-h-screen">
-      {/* LEFT — Image Panel */}
+      {/* LEFT image panel — desktop only */}
       <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between overflow-hidden bg-[#0A0A0A]">
         <img
           src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=900&q=80"
           alt="Student studying"
           className="absolute inset-0 h-full w-full object-cover opacity-50"
         />
-        {/* Overlay gradient */}
         <div className="absolute inset-0 bg-[#0A0A0A]/60" />
-
-        {/* Top logo */}
         <div className="relative z-10 p-10">
           <Logo />
         </div>
-
-        {/* Bottom quote */}
         <div className="relative z-10 p-10">
           <blockquote className="font-display text-2xl font-semibold leading-snug text-white">
             "The study pal every African student always needed."
@@ -70,7 +107,6 @@ function Signup() {
               <p className="text-xs text-white/60">UNILAG Postgrad · Using StudyPal</p>
             </div>
           </div>
-          {/* Stats row */}
           <div className="mt-8 flex gap-6 border-t border-white/10 pt-6">
             {[
               { label: "Active students", value: "2,400+" },
@@ -86,13 +122,11 @@ function Signup() {
         </div>
       </div>
 
-      {/* RIGHT — Form Panel */}
+      {/* RIGHT form panel — full width on mobile */}
       <div className="relative flex w-full flex-col justify-center bg-background px-6 py-12 lg:w-1/2 lg:px-16">
         <div className="absolute right-5 top-5">
           <ThemeToggle />
         </div>
-
-        {/* Mobile logo */}
         <div className="mb-8 flex justify-center lg:hidden">
           <Logo />
         </div>
@@ -103,11 +137,8 @@ function Signup() {
           transition={{ duration: 0.5 }}
           className="mx-auto w-full max-w-sm"
         >
-          {/* Header */}
           <div className="mb-8">
-            <p className="font-mono text-xs uppercase tracking-widest text-accent">
-              Get started free
-            </p>
+            <p className="font-mono text-xs uppercase tracking-widest text-accent">Get started free</p>
             <h1 className="font-display mt-2 text-4xl font-semibold tracking-tight">
               Start studying smarter.
             </h1>
@@ -116,81 +147,119 @@ function Signup() {
             </p>
           </div>
 
-          {/* Error */}
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
-            >
-              {error}
-            </motion.div>
-          )}
+          <AnimatePresence>
+            {submitError && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="mb-6 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+              >
+                {submitError.text}{" "}
+                {submitError.linkTo && (
+                  <Link to={submitError.linkTo} className="font-semibold underline underline-offset-2">
+                    {submitError.linkTo === "/login" ? "Log in" : "Sign up"}
+                  </Link>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {[
-              {
-                label: "Full name",
-                type: "text",
-                value: name,
-                setter: setName,
-                placeholder: "Amara Okeke",
-              },
-              {
-                label: "Email address",
-                type: "email",
-                value: email,
-                setter: setEmail,
-                placeholder: "you@school.edu.ng",
-              },
-              {
-                label: "Password",
-                type: "password",
-                value: password,
-                setter: setPassword,
-                placeholder: "At least 8 characters",
-              },
-            ].map((field) => (
-              <div key={field.label}>
-                <label className="font-mono block text-xs uppercase tracking-widest text-muted-foreground">
-                  {field.label}
-                </label>
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            {/* Full name */}
+            <div>
+              <label className="font-mono block text-xs uppercase tracking-widest text-muted-foreground">
+                Full name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (submitError) setSubmitError(null);
+                }}
+                onBlur={() => setTouched((t) => ({ ...t, name: true }))}
+                placeholder="Amara Okeke"
+                className={`${inputCls} mt-2 ${nameErr ? "border-red-500 focus:border-red-500" : "border-border focus:border-accent"}`}
+              />
+              <FieldError msg={nameErr} />
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="font-mono block text-xs uppercase tracking-widest text-muted-foreground">
+                Email address
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (submitError) setSubmitError(null);
+                }}
+                onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+                placeholder="you@school.edu.ng"
+                className={`${inputCls} mt-2 ${emailErr ? "border-red-500 focus:border-red-500" : "border-border focus:border-accent"}`}
+              />
+              <FieldError msg={emailErr} />
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="font-mono block text-xs uppercase tracking-widest text-muted-foreground">
+                Password
+              </label>
+              <div className="relative mt-2">
                 <input
-                  type={field.type}
-                  required
-                  minLength={field.type === "password" ? 8 : undefined}
-                  value={field.value}
-                  onChange={(e) => field.setter(e.target.value)}
-                  placeholder={field.placeholder}
-                  className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-all duration-200 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:border-accent/50"
+                  type={showPw ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (submitError) setSubmitError(null);
+                  }}
+                  onBlur={() => setTouched((t) => ({ ...t, password: true }))}
+                  placeholder="At least 8 characters"
+                  className={`${inputCls} pr-11 ${pwErr ? "border-red-500 focus:border-red-500" : "border-border focus:border-accent"}`}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPw((s) => !s)}
+                  aria-label={showPw ? "Hide password" : "Show password"}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
-            ))}
+
+              {password.length > 0 && (
+                <div className="mt-2">
+                  <div className="flex gap-1">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className={`h-1 flex-1 rounded-full transition-colors ${
+                          i <= strength.score ? strength.color : "bg-muted"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {strength.label}
+                  </p>
+                </div>
+              )}
+              <FieldError msg={pwErr} />
+            </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="btn-press mt-2 w-full rounded-xl bg-accent py-3.5 text-sm font-semibold text-accent-foreground transition disabled:opacity-50"
+              className="btn-press mt-2 w-full rounded-xl bg-accent py-3.5 text-sm font-semibold text-accent-foreground transition disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    />
-                  </svg>
-                  Creating your account...
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Creating your account…
                 </span>
               ) : (
                 "Create Free Account →"
@@ -198,25 +267,19 @@ function Signup() {
             </button>
           </form>
 
-          {/* Divider */}
           <div className="my-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-border" />
             <span className="text-xs text-muted-foreground">secure · encrypted · private</span>
             <div className="h-px flex-1 bg-border" />
           </div>
 
-          {/* Footer link */}
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link
-              to="/login"
-              className="font-semibold text-accent underline-offset-4 hover:underline"
-            >
+            <Link to="/login" className="font-semibold text-accent underline-offset-4 hover:underline">
               Log in
             </Link>
           </p>
 
-          {/* Trust badges */}
           <div className="mt-8 flex items-center justify-center gap-4 opacity-50">
             {["UNILAG", "LASU", "UI", "FUNAAB", "ABU"].map((school) => (
               <span
