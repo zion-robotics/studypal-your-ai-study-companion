@@ -5,9 +5,12 @@ import { useState } from "react";
 import { AppShell } from "@/components/sp/AppShell";
 import { groqStructured } from "@/lib/groq";
 import { useProfile } from "@/hooks/useProfile";
+import { requireAuth } from "@/lib/guards";
 
 export const Route = createFileRoute("/upload")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Upload notes — StudyPal" }] }),
+  beforeLoad: requireAuth,
   component: Upload,
 });
 

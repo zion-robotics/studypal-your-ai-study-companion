@@ -5,9 +5,12 @@ import { AppShell } from "@/components/sp/AppShell";
 import { useCountUp } from "@/hooks/useCountUp";
 import { useProfile, daysUntil } from "@/hooks/useProfile";
 import { supabase } from "@/lib/supabase";
+import { requireAuth } from "@/lib/guards";
 
 export const Route = createFileRoute("/dashboard")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Dashboard — StudyPal" }] }),
+  beforeLoad: requireAuth,
   component: Dashboard,
 });
 

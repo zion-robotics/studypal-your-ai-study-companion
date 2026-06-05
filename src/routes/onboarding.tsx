@@ -15,9 +15,12 @@ import { toast } from "sonner";
 import { Logo } from "@/components/sp/Logo";
 import { ThemeToggle } from "@/components/sp/ThemeToggle";
 import { supabase } from "@/lib/supabase";
+import { requireAuth } from "@/lib/guards";
 
 export const Route = createFileRoute("/onboarding")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Onboarding — StudyPal" }] }),
+  beforeLoad: requireAuth,
   component: Onboarding,
 });
 
