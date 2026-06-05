@@ -146,41 +146,43 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    // Handle Supabase auth callback from email confirmation links
-    // The token arrives in the URL hash: #access_token=...&type=signup
-    const hash = window.location.hash;
-    if (hash && hash.includes("access_token")) {
-      supabase.auth.getSession().then(async ({ data: { session } }) => {
-        if (session) {
-          // Check if onboarding is complete
-          const { data: profile } = await supabase
-            .from("user_profiles")
-            .select("onboarding_completed")
-            .eq("user_id", session.user.id)
-            .single();
+    const routeAfterSignIn = async (session: NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]>) => {
+      const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("onboarding_completed")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
 
-          // Clear the hash from URL cleanly
-          window.history.replaceState(null, "", window.location.pathname);
+      if (window.location.hash) {
+        window.history.replaceState(null, "", window.location.pathname);
+      }
 
-          if (profile?.onboarding_completed) {
-            router.navigate({ to: "/dashboard" });
-          } else {
-            router.navigate({ to: "/onboarding" });
-          }
+      if (profile?.onboarding_completed) {
+        router.navigate({ to: "/dashboard" });
+      } else {
+        router.navigate({ to: "/onboarding" });
+      }
+    };
+
+    const hasAuthHash = window.location.hash.includes("access_token");
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === "SIGNED_IN" && session) {
+          void routeAfterSignIn(session);
         }
+        void router.invalidate();
+      },
+    );
+
+    if (hasAuthHash) {
+      void supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) void routeAfterSignIn(session);
       });
     }
 
-    // Listen for auth state changes across the app
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, _session) => {
-        // Invalidate router so route guards re-run when session changes
-        router.invalidate();
-      }
-    );
-
     return () => subscription.unsubscribe();
-  }, []);
+  }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>
