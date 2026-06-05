@@ -10,5 +10,11 @@ export const supabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 export const supabase: SupabaseClient = createClient(
   SUPABASE_URL || "https://placeholder.supabase.co",
   SUPABASE_ANON_KEY || "placeholder-anon-key",
-  { auth: { persistSession: supabaseConfigured, autoRefreshToken: supabaseConfigured } },
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  },
 );
