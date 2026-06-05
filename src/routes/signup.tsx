@@ -12,9 +12,12 @@ import {
   validateName,
   validatePassword,
 } from "@/lib/validation";
+import { requireGuest } from "@/lib/guards";
 
 export const Route = createFileRoute("/signup")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Sign up — StudyPal" }] }),
+  beforeLoad: requireGuest,
   component: Signup,
 });
 
