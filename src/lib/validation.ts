@@ -39,9 +39,9 @@ export function friendlyAuthError(message: string): { text: string; linkTo?: "/l
   if (m.includes("already registered") || m.includes("already exists") || m.includes("user already"))
     return { text: "An account with this email already exists. Log in instead?", linkTo: "/login" };
   if (m.includes("invalid login") || m.includes("invalid credentials"))
-    return { text: "Email or password is incorrect. Try again." };
+    return { text: "Incorrect email or password. Try again — or", linkTo: "/signup" };
   if (m.includes("email not confirmed"))
-    return { text: "Please check your email and confirm your account first." };
+    return { text: "Please confirm your email first. Check your inbox." };
   if (m.includes("user not found"))
     return { text: "No account found with this email. Sign up instead?", linkTo: "/signup" };
   if (m.includes("invalid email")) return { text: "That email doesn't look right. Check and try again." };

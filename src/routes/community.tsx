@@ -3,9 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { AppShell } from "@/components/sp/AppShell";
 import { useProfile } from "@/hooks/useProfile";
+import { requireAuth } from "@/lib/guards";
 
 export const Route = createFileRoute("/community")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Community — StudyPal" }] }),
+  beforeLoad: requireAuth,
   component: Community,
 });
 

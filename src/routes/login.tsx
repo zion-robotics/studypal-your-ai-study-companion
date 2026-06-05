@@ -6,9 +6,12 @@ import { Logo } from "@/components/sp/Logo";
 import { ThemeToggle } from "@/components/sp/ThemeToggle";
 import { supabase } from "@/lib/supabase";
 import { friendlyAuthError, validateEmail } from "@/lib/validation";
+import { requireGuest } from "@/lib/guards";
 
 export const Route = createFileRoute("/login")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Log in — StudyPal" }] }),
+  beforeLoad: requireGuest,
   component: Login,
 });
 
@@ -56,10 +59,20 @@ function Login() {
         password,
       });
       if (signInError) throw signInError;
-      const fullName = (data.user?.user_metadata as any)?.full_name;
-      const onboarded = (data.user?.user_metadata as any)?.onboarding_completed;
-      if (fullName && onboarded) nav({ to: "/dashboard" });
-      else nav({ to: "/onboarding" });
+      const userId = data.user?.id;
+      let onboarded = false;
+      if (userId) {
+        const { data: profile } = await supabase
+          .from("user_profiles")
+          .select("onboarding_completed")
+          .eq("user_id", userId)
+          .maybeSingle();
+        onboarded =
+          profile?.onboarding_completed ??
+          (data.user?.user_metadata as any)?.onboarding_completed ??
+          false;
+      }
+      nav({ to: onboarded ? "/dashboard" : "/onboarding" });
     } catch (err: any) {
       setSubmitError(friendlyAuthError(err?.message ?? "Something went wrong. Try again."));
     } finally {

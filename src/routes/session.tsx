@@ -4,9 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/sp/AppShell";
 import { speak, stopSpeaking } from "@/lib/speech";
 import { useProfile } from "@/hooks/useProfile";
+import { requireAuth } from "@/lib/guards";
 
 export const Route = createFileRoute("/session")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Session — StudyPal" }] }),
+  beforeLoad: requireAuth,
   component: Session,
 });
 
