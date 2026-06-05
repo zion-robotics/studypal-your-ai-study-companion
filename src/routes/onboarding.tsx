@@ -201,9 +201,15 @@ function Onboarding() {
     try {
       const { data: userData } = await supabase.auth.getUser();
       const user = userData?.user;
+      if (!user) {
+        toast.error("Your session expired. Please log in again.");
+        nav({ to: "/login" });
+        return;
+      }
 
       const payload = {
-        user_id: user?.id,
+        user_id: user.id,
+        full_name: (user.user_metadata as any)?.full_name ?? null,
         user_type: userType,
         school_name: userType === "tertiary" ? schoolName : null,
         course: userType === "tertiary" ? course : null,
@@ -217,26 +223,26 @@ function Onboarding() {
         onboarding_completed: true,
       };
 
-      // Attempt to persist to Supabase. If table doesn't exist or env missing,
-      // fall back to user metadata + localStorage so onboarding still completes.
-      if (user) {
-        const { error: profileErr } = await supabase
-          .from("user_profiles")
-          .upsert(payload, { onConflict: "user_id" });
-        if (profileErr) {
-          // Soft-fail: stash on user_metadata so app still personalizes
-          await supabase.auth.updateUser({
-            data: { ...payload, full_name: user.user_metadata?.full_name },
-          });
-        }
+      const { error: profileErr } = await supabase
+        .from("user_profiles")
+        .upsert(payload, { onConflict: "user_id" });
+      if (profileErr) {
+        // Mirror to user_metadata as a safety net so the app still personalizes,
+        // but surface the error so the user can retry.
+        await supabase.auth.updateUser({ data: payload });
+        toast.error("Failed to save your profile. Try again.");
+        setSaving(false);
+        return;
       }
+      // Mirror onboarding flag onto user metadata for fast client checks.
+      await supabase.auth.updateUser({ data: { onboarding_completed: true } });
       if (typeof window !== "undefined") {
         localStorage.setItem("studypal_profile", JSON.stringify(payload));
       }
       toast.success("Study plan saved. Let's go.");
       nav({ to: "/dashboard" });
     } catch (err: any) {
-      toast.error(err?.message ?? "Couldn't save your plan. Try again.");
+      toast.error("Failed to save your profile. Try again.");
     } finally {
       setSaving(false);
     }
