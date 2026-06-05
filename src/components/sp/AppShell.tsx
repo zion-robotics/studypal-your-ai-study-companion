@@ -11,24 +11,10 @@ const nav = [
   { to: "/community", label: "Community", icon: "M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87M17 3.13A4 4 0 0 1 17 11" },
 ];
 
-function NavItem({ to, label, icon, active }: { to: string; label: string; icon: string; active: boolean }) {
-  return (
-    <Link to={to}
-      className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
-        active ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-      }`}>
-      <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d={icon} />
-      </svg>
-      <span>{label}</span>
-      {active && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-accent-foreground/60" />}
-    </Link>
-  );
-}
-
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const nav2 = useNavigate();
+  const [expanded, setExpanded] = useState(false);
   const [userName, setUserName] = useState("Student");
   const [userInitial, setUserInitial] = useState("S");
 
@@ -49,44 +35,77 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Sidebar — always expanded */}
-      <aside className="hidden md:flex sticky top-0 h-screen w-64 shrink-0 flex-col border-r border-border bg-sidebar px-4 py-6">
-
+      {/* Sidebar */}
+      <aside
+        onMouseEnter={() => setExpanded(true)}
+        onMouseLeave={() => setExpanded(false)}
+        className={`hidden md:flex sticky top-0 h-screen shrink-0 flex-col border-r border-border bg-sidebar px-3 py-6 overflow-hidden transition-all duration-300 ease-in-out ${
+          expanded ? "w-64" : "w-[68px]"
+        }`}
+      >
         {/* Logo */}
-        <div className="mb-8 px-2">
-          <Logo />
+        <div className="mb-8 flex items-center gap-3 px-1 overflow-hidden">
+          <div className="shrink-0">
+            <Logo />
+          </div>
+          <span className={`font-display text-lg font-semibold whitespace-nowrap transition-all duration-300 ${expanded ? "opacity-100 w-auto" : "opacity-0 w-0"}`}>
+            StudyPal
+          </span>
         </div>
 
-        {/* Nav links */}
+        {/* Nav */}
         <nav className="flex flex-col gap-1">
-          {nav.map((n) => (
-            <NavItem key={n.to} to={n.to} label={n.label} icon={n.icon} active={pathname.startsWith(n.to)} />
-          ))}
+          {nav.map((n) => {
+            const active = pathname.startsWith(n.to);
+            return (
+              <Link
+                key={n.to}
+                to={n.to}
+                className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all duration-200 overflow-hidden ${
+                  active
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d={n.icon} />
+                </svg>
+                <span className={`whitespace-nowrap transition-all duration-300 ${expanded ? "opacity-100 w-auto" : "opacity-0 w-0"}`}>
+                  {n.label}
+                </span>
+                {active && expanded && (
+                  <div className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-accent-foreground/60" />
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
-        {/* Spacer */}
-        <div className="flex-1" />
+        {/* Bottom */}
+        <div className="mt-auto flex flex-col gap-2">
+          {/* Theme toggle */}
+          <div className={`flex items-center gap-3 rounded-xl px-3 py-2.5 overflow-hidden transition-all duration-200 ${expanded ? "border border-border" : ""}`}>
+            <div className="shrink-0">
+              <ThemeToggle />
+            </div>
+            <span className={`text-sm text-muted-foreground whitespace-nowrap transition-all duration-300 ${expanded ? "opacity-100 w-auto" : "opacity-0 w-0"}`}>
+              Theme
+            </span>
+          </div>
 
-        {/* Theme toggle */}
-        <div className="mb-3 flex items-center justify-between rounded-xl border border-border px-4 py-3">
-          <span className="text-sm text-muted-foreground">Theme</span>
-          <ThemeToggle />
-        </div>
-
-        {/* User card */}
-        <div className="rounded-xl border border-border bg-background p-3">
-          <div className="flex items-center gap-3">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
+          {/* User card */}
+          <div className={`flex items-center gap-3 rounded-xl px-3 py-2.5 overflow-hidden transition-all duration-200 ${expanded ? "border border-border bg-background" : ""}`}>
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
               {userInitial}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="truncate text-sm font-medium">{userName}</div>
-              <div className="text-xs text-muted-foreground">Free plan</div>
+            <div className={`flex-1 min-w-0 transition-all duration-300 ${expanded ? "opacity-100 w-auto" : "opacity-0 w-0"}`}>
+              <div className="truncate text-sm font-medium whitespace-nowrap">{userName}</div>
+              <div className="text-xs text-muted-foreground whitespace-nowrap">Free plan</div>
             </div>
             <button
               onClick={handleLogout}
               title="Log out"
-              className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition"
+              className={`shrink-0 rounded-lg p-1 text-muted-foreground hover:text-foreground transition-all duration-300 ${expanded ? "opacity-100" : "opacity-0 w-0 pointer-events-none"}`}
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
