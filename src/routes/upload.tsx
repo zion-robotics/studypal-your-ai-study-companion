@@ -4,14 +4,21 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { AppShell } from "@/components/sp/AppShell";
 import { groqStructured } from "@/lib/groq";
+import { useProfile } from "@/hooks/useProfile";
 
 export const Route = createFileRoute("/upload")({
   head: () => ({ meta: [{ title: "Upload notes — StudyPal" }] }),
   component: Upload,
 });
 
+const TERTIARY_FALLBACK = ["Foundations & vocabulary", "Core concepts in plain language", "Worked example: real exam question", "Common mistakes to avoid", "Quick recap & retention check"];
+const SECONDARY_FALLBACK = ["Key definitions & terms", "Common JAMB/WAEC question patterns", "Past question walkthrough", "Tricky areas to watch", "Final revision checklist"];
+
+const EXAM_PILLS = ["JAMB", "WAEC", "NECO", "POST-UTME", "GCE"];
+
 function Upload() {
   const nav = useNavigate();
+  const { profile } = useProfile();
   const structureNotes = useServerFn(groqStructured);
   const [subject, setSubject] = useState("");
   const [notes, setNotes] = useState("");
@@ -19,21 +26,21 @@ function Upload() {
   const [drag, setDrag] = useState(false);
   const [status, setStatus] = useState<"idle" | "thinking" | "ready">("idle");
   const [topics, setTopics] = useState<string[]>([]);
+  const [selectedExam, setSelectedExam] = useState("JAMB");
+
+  const isTertiary = profile?.user_type === "tertiary";
 
   async function structure() {
     setStatus("thinking");
-    const fallback = [
-      "Foundations & vocabulary",
-      "Core concepts in plain language",
-      "Worked example: real exam question",
-      "Common mistakes to avoid",
-      "Quick recap & retention check",
-    ];
+    const fallback = isTertiary ? TERTIARY_FALLBACK : SECONDARY_FALLBACK;
+    const examContext = isTertiary ? "" : `This is for ${selectedExam} exam preparation.`;
     try {
       const r = await structureNotes({
         data: {
-          prompt: `Structure these notes into 5–7 ordered lesson topics. Subject: ${subject}. Notes: ${notes.slice(0, 4000)}`,
-          schemaHint: "Return { topics: string[] }",
+          prompt: `Structure these notes into 5–7 ordered lesson topics. ${examContext} Subject: ${subject}. Notes: ${notes.slice(0, 4000)}`,
+          schemaHint: isTertiary
+            ? "Return { topics: string[] } — academic, conceptual topics suitable for university level"
+            : "Return { topics: string[] } — exam-focused revision topics, each likely to appear in JAMB or WAEC",
         },
       });
       setTopics(Array.isArray((r as any).topics) ? (r as any).topics : fallback);
@@ -47,66 +54,82 @@ function Upload() {
     <AppShell>
       <div className="mx-auto max-w-4xl space-y-6 p-5 md:p-8">
         <div>
-          <div className="font-mono text-xs text-muted-foreground">NEW LESSON</div>
+          <div className="font-mono text-xs text-muted-foreground uppercase tracking-widest">
+            {isTertiary ? "NEW LESSON" : "EXAM MATERIAL"}
+          </div>
           <h1 className="mt-1 font-display text-3xl md:text-4xl">
-            Drop in your notes. We'll do the structuring.
+            {isTertiary
+              ? "Drop in your notes. We'll do the structuring."
+              : "Drop in your past questions. We'll build your revision plan."}
           </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {isTertiary
+              ? "Upload lecture notes, textbook chapters, or past exam papers. AI organizes them into lessons."
+              : "Upload JAMB/WAEC past questions, your syllabus, or handwritten notes. AI identifies exam patterns."}
+          </p>
         </div>
 
         <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDrag(true);
-          }}
+          onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
           onDragLeave={() => setDrag(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDrag(false);
-            setFile(e.dataTransfer.files?.[0] ?? null);
-          }}
+          onDrop={(e) => { e.preventDefault(); setDrag(false); setFile(e.dataTransfer.files?.[0] ?? null); }}
           className={`rounded-3xl border-2 border-dashed bg-card p-10 text-center transition ${drag ? "border-accent bg-accent/5" : "border-border"}`}
         >
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-accent text-accent-foreground">
-            <svg
-              viewBox="0 0 24 24"
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
               <path d="M14 2v6h6M12 18v-6M9 15l3-3 3 3" />
             </svg>
           </div>
           <div className="mt-4 font-display text-xl">{file ? file.name : "Drag a PDF here"}</div>
           <p className="mt-1 text-sm text-muted-foreground">
-            or paste your raw notes below — works either way
+            {isTertiary ? "or paste your lecture notes below" : "or paste your past questions below"}
           </p>
           <label className="btn-press mt-5 inline-flex cursor-pointer rounded-full border border-border bg-background px-4 py-2 text-sm">
             Choose a file
-            <input
-              type="file"
-              accept=".pdf,.txt,.md,.docx"
-              hidden
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            />
+            <input type="file" accept=".pdf,.txt,.md,.docx" hidden onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
           </label>
         </div>
 
         <div className="space-y-4 rounded-3xl border border-border bg-card p-6">
-          <input
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            placeholder="Subject name (e.g. JAMB Biology)"
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
-          />
+          <div>
+            <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              {isTertiary ? "Course / Subject" : "Subject"}
+            </label>
+            <input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder={isTertiary ? "e.g. Organic Chemistry, Business Law" : "e.g. Biology, Mathematics, Literature"}
+              className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+            />
+          </div>
+
+          {/* Exam type selector for secondary students */}
+          {!isTertiary && (
+            <div>
+              <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Which exam is this for?
+              </label>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {EXAM_PILLS.map((e) => (
+                  <button
+                    key={e}
+                    type="button"
+                    onClick={() => setSelectedExam(e)}
+                    className={`rounded-full border px-4 py-1.5 text-xs font-medium transition ${selectedExam === e ? "border-accent bg-accent text-accent-foreground" : "border-border hover:border-accent"}`}
+                  >
+                    {e}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={8}
-            placeholder="Paste raw lecture notes here..."
+            placeholder={isTertiary ? "Paste raw lecture notes here..." : "Paste past questions or revision notes here..."}
             className="w-full resize-none rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
           />
           <button
@@ -114,20 +137,18 @@ function Upload() {
             disabled={!subject || (!notes && !file) || status === "thinking"}
             className="btn-press w-full rounded-xl bg-accent py-3 text-sm font-medium text-accent-foreground disabled:opacity-50"
           >
-            {status === "thinking" ? "Structuring..." : "Structure My Notes"}
+            {status === "thinking" ? "Structuring..." : isTertiary ? "Structure My Notes →" : "Build My Revision Plan →"}
           </button>
         </div>
 
         <AnimatePresence>
           {status === "thinking" && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="rounded-3xl border border-border bg-card p-8 text-center"
-            >
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="rounded-3xl border border-border bg-card p-8 text-center">
               <div className="mx-auto h-3 w-3 animate-ping rounded-full bg-accent" />
-              <div className="mt-4 font-display text-lg">AI is organizing your content...</div>
+              <div className="mt-4 font-display text-lg">
+                {isTertiary ? "AI is organizing your content..." : "AI is identifying exam patterns..."}
+              </div>
               <div className="mt-1 font-mono text-xs uppercase tracking-widest text-muted-foreground">
                 Groq · Aethex · streaming
               </div>
@@ -135,21 +156,28 @@ function Upload() {
           )}
 
           {status === "ready" && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded-3xl border border-border bg-card p-6"
-            >
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              className="rounded-3xl border border-border bg-card p-6">
               <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-                Lesson plan preview
+                {isTertiary ? "Lesson plan preview" : "Revision plan preview"}
               </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {isTertiary
+                  ? `${topics.length} topics found. Ready to generate your study plan.`
+                  : `${topics.length} exam areas identified. High-frequency topics flagged.`}
+              </p>
               <ol className="mt-4 divide-y divide-border">
                 {topics.map((t, i) => (
                   <li key={i} className="flex items-center gap-4 py-3">
-                    <span className="grid h-8 w-8 place-items-center rounded-full bg-muted font-mono text-xs">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-muted font-mono text-xs">
                       0{i + 1}
                     </span>
                     <span className="text-sm">{t}</span>
+                    {!isTertiary && i < 2 && (
+                      <span className="ml-auto shrink-0 rounded-full bg-accent/10 px-2.5 py-1 font-mono text-[10px] text-accent">
+                        🎯 High freq
+                      </span>
+                    )}
                   </li>
                 ))}
               </ol>
@@ -157,7 +185,7 @@ function Upload() {
                 onClick={() => nav({ to: "/dashboard" })}
                 className="btn-press mt-6 w-full rounded-xl bg-accent py-3 text-sm font-medium text-accent-foreground"
               >
-                Generate My Study Plan
+                {isTertiary ? "Generate My Study Plan →" : "Generate My Revision Plan →"}
               </button>
             </motion.div>
           )}
