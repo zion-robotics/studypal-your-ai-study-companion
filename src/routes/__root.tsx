@@ -12,6 +12,7 @@ import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { supabase } from "@/lib/supabase";
 
 function NotFoundComponent() {
   return (
@@ -142,6 +143,44 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Handle Supabase auth callback from email confirmation links
+    // The token arrives in the URL hash: #access_token=...&type=signup
+    const hash = window.location.hash;
+    if (hash && hash.includes("access_token")) {
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
+        if (session) {
+          // Check if onboarding is complete
+          const { data: profile } = await supabase
+            .from("user_profiles")
+            .select("onboarding_completed")
+            .eq("user_id", session.user.id)
+            .single();
+
+          // Clear the hash from URL cleanly
+          window.history.replaceState(null, "", window.location.pathname);
+
+          if (profile?.onboarding_completed) {
+            router.navigate({ to: "/dashboard" });
+          } else {
+            router.navigate({ to: "/onboarding" });
+          }
+        }
+      });
+    }
+
+    // Listen for auth state changes across the app
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, _session) => {
+        // Invalidate router so route guards re-run when session changes
+        router.invalidate();
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
