@@ -93,17 +93,20 @@ export function AppShell({ children }: { children: ReactNode }) {
             </span>
           </div>
 
-          {/* User card */}
-          <div className={`flex items-center gap-3 rounded-xl px-3 py-2.5 overflow-hidden transition-all duration-200 ${expanded ? "border border-border bg-background" : ""}`}>
+          {/* User card → Settings */}
+          <Link
+            to="/settings"
+            className={`flex items-center gap-3 rounded-xl px-3 py-2.5 overflow-hidden transition-all duration-200 hover:bg-muted ${expanded ? "border border-border bg-background" : ""}`}
+          >
             <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
               {userInitial}
             </div>
             <div className={`flex-1 min-w-0 transition-all duration-300 ${expanded ? "opacity-100 w-auto" : "opacity-0 w-0"}`}>
               <div className="truncate text-sm font-medium whitespace-nowrap">{userName}</div>
-              <div className="text-xs text-muted-foreground whitespace-nowrap">Free plan</div>
+              <div className="text-xs text-muted-foreground whitespace-nowrap">Settings</div>
             </div>
             <button
-              onClick={handleLogout}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleLogout(); }}
               title="Log out"
               className={`shrink-0 rounded-lg p-1 text-muted-foreground hover:text-foreground transition-all duration-300 ${expanded ? "opacity-100" : "opacity-0 w-0 pointer-events-none"}`}
             >
@@ -111,7 +114,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
               </svg>
             </button>
-          </div>
+          </Link>
         </div>
       </aside>
 
