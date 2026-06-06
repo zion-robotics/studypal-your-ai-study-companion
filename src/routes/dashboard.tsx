@@ -1,436 +1,178 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { AppShell } from "@/components/sp/AppShell";
-import { supabase } from "@/lib/supabase";
+import { createFileRoute } from "@tanstack/react-router";
+import {
+  Bell, Plus, Upload, FileText, Folder,
+  ChevronRight, ChevronDown, FilePlus, Search,
+  Sparkles, CheckCircle2, MoreVertical,
+  ClipboardList, FlipHorizontal, BookOpen, Mic,
+} from "lucide-react";
+import { AppShell } from "./-AppShell";
+import uploadImg from "@/assets/upload-illustration.jpg";
+import chemImg from "@/assets/subj-chemistry.jpg";
+import econImg from "@/assets/subj-economy.jpg";
+import bioImg from "@/assets/subj-biology.jpg";
+import cityImg from "@/assets/city-scene.jpg";
 
 export const Route = createFileRoute("/dashboard")({
+  head: () => ({
+    meta: [
+      { title: "Dashboard — StudyAI" },
+      { name: "description", content: "Your study hub." },
+    ],
+  }),
   component: DashboardPage,
 });
 
-type UserType = "secondary" | "tertiary";
-
-interface DashboardProfile {
-  full_name: string;
-  user_type: UserType;
-  school: string;
-  exam_date: string;
-  streak: number;
-  xp: number;
-  level: number;
-}
-
-interface StatCardProps {
-  icon: string;
-  label: string;
-  value: string | number;
-  sub?: string;
-  accent?: boolean;
-  delay?: number;
-}
-
-function StatCard({ icon, label, value, sub, accent, delay = 0 }: StatCardProps) {
+function DashboardPage() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className={`relative overflow-hidden rounded-2xl border p-5 ${
-        accent
-          ? "border-accent/30 bg-accent/10 shadow-[0_0_30px_-8px_rgb(13_148_136_/_0.3)]"
-          : "border-border bg-card"
-      }`}
-    >
-      {accent && (
-        <div className="pointer-events-none absolute -right-4 -top-4 h-24 w-24 rounded-full bg-accent/20 blur-2xl" />
-      )}
-      <div className="text-2xl mb-3">{icon}</div>
-      <div className="text-2xl font-bold tracking-tight">{value}</div>
-      <div className="text-sm font-medium text-foreground mt-0.5">{label}</div>
-      {sub && <div className="text-xs text-muted-foreground mt-1">{sub}</div>}
-    </motion.div>
-  );
-}
+    <AppShell>
+      <div className="flex h-full overflow-hidden">
+        {/* Left column */}
+        <section className="w-[280px] shrink-0 bg-sage-light p-6 flex flex-col h-full overflow-y-auto">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold">Quick Upload</h2>
+            <button className="rounded-md p-2 hover:bg-white/50"><FilePlus className="h-4 w-4" /></button>
+          </div>
+          <div className="mt-6 flex-1 flex items-center justify-center min-h-0">
+            <img src={uploadImg} alt="" className="max-w-full max-h-full object-contain" loading="lazy" />
+          </div>
+          <div className="text-center">
+            <h4 className="text-xl font-extrabold">Upload Files or<br />Documents</h4>
+            <p className="text-xs text-muted-foreground mt-2 mb-4">Drop files into a course folder:</p>
+            <div className="mb-3 rounded-xl border bg-white px-3 py-2 flex items-center justify-between text-sm font-medium cursor-pointer hover:bg-white/80 transition">
+              <span className="text-muted-foreground">Select a course…</span>
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <button className="w-full rounded-xl bg-gradient-to-b from-coral to-primary py-3.5 text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-coral/30 hover:opacity-95 transition">
+              <Upload className="h-4 w-4" /> Upload Document
+            </button>
+          </div>
+        </section>
 
-function QuickAction({
-  icon,
-  label,
-  description,
-  to,
-  delay = 0,
-}: {
-  icon: string;
-  label: string;
-  description: string;
-  to: string;
-  delay?: number;
-}) {
-  const navigate = useNavigate();
-  return (
-    <motion.button
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay, duration: 0.35 }}
-      onClick={() => navigate({ to })}
-      className="group flex items-start gap-4 rounded-2xl border border-border bg-card p-5 text-left transition-all duration-200 hover:border-accent/40 hover:bg-accent/5 hover:shadow-[0_0_20px_-6px_rgb(13_148_136_/_0.25)] active:scale-[0.98]"
-    >
-      <span className="mt-0.5 text-2xl">{icon}</span>
-      <div>
-        <div className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors">
-          {label}
-        </div>
-        <div className="text-xs text-muted-foreground mt-0.5">{description}</div>
-      </div>
-      <svg
-        viewBox="0 0 24 24"
-        className="ml-auto mt-1 h-4 w-4 shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5 group-hover:text-accent"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      >
-        <path d="M5 12h14M12 5l7 7-7 7" />
-      </svg>
-    </motion.button>
-  );
-}
+        {/* Main */}
+        <main className="flex-1 p-8 overflow-y-auto h-full">
+          <header className="flex items-start justify-between">
+            <div>
+              <h1 className="text-4xl font-extrabold tracking-tight">My Study Hub</h1>
+              <p className="text-sm text-muted-foreground mt-2">Organise your courses, upload documents, and study smarter</p>
+            </div>
+            <button className="relative rounded-full bg-white shadow-sm p-3 border">
+              <Bell className="h-5 w-5" />
+              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-coral text-white text-[10px] font-bold flex items-center justify-center">4</span>
+            </button>
+          </header>
 
-function StreakDots({ streak }: { streak: number }) {
-  const days = ["M", "T", "W", "T", "F", "S", "S"];
-  const today = new Date().getDay();
-  const active = Math.min(streak, 7);
-
-  return (
-    <div className="flex gap-2 mt-3">
-      {days.map((d, i) => {
-        const filled = i < active;
-        const isToday = i === (today === 0 ? 6 : today - 1);
-        return (
-          <div key={i} className="flex flex-col items-center gap-1">
-            <div
-              className={`h-7 w-7 rounded-lg text-xs font-bold grid place-items-center transition-all ${
-                filled
-                  ? "bg-accent text-accent-foreground shadow-[0_0_10px_-2px_rgb(13_148_136_/_0.5)]"
-                  : "bg-muted text-muted-foreground"
-              } ${isToday ? "ring-2 ring-accent ring-offset-2 ring-offset-background" : ""}`}
-            >
-              {d}
+          <div className="mt-6 flex items-center justify-between rounded-2xl bg-white border px-5 py-4 shadow-sm">
+            <div className="flex items-center gap-3 text-sm font-medium flex-1">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <input className="flex-1 outline-none text-sm placeholder:text-muted-foreground bg-transparent" placeholder="Search documents, notes, quizzes…" />
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground border-l pl-4 ml-4 font-medium">
+              <Sparkles className="h-4 w-4 text-coral" />
+              AI Search
             </div>
           </div>
-        );
-      })}
+
+          <div className="mt-6 grid grid-cols-[80px_repeat(3,1fr)] gap-4">
+            <button className="rounded-2xl border-2 border-dashed border-border bg-white/50 flex flex-col items-center justify-center gap-3 py-6 hover:border-coral transition">
+              <span className="[writing-mode:vertical-rl] rotate-180 text-sm font-semibold text-muted-foreground">New Folder</span>
+              <div className="h-7 w-7 rounded-md bg-coral/10 text-coral flex items-center justify-center"><Plus className="h-4 w-4" /></div>
+            </button>
+            <CourseFolder img={chemImg} title="Chemistry" docCount={12} teacher="Mr. Loris Bowl" />
+            <CourseFolder img={econImg} title="Economics" docCount={8} teacher="Mrs. Olivia Win" />
+            <CourseFolder img={bioImg} title="Biology" docCount={15} teacher="Mrs. Brisia Olive" />
+          </div>
+
+          <section className="mt-8">
+            <h2 className="text-2xl font-extrabold">Recent Documents</h2>
+            <div className="mt-4 rounded-2xl bg-white border divide-y">
+              <DocumentRow color="bg-sage" title="Organic Chemistry — Chapter 4.pdf" course="Chemistry" size="2.4 MB" status="Assessed" />
+              <DocumentRow color="bg-leaf/20" title="Microeconomics Lecture Notes.docx" course="Economics" size="1.1 MB" status="Pending" />
+              <DocumentRow color="bg-coral/15" title="Cell Biology Textbook Extract.pdf" course="Biology" size="5.7 MB" status="Assessed" />
+            </div>
+          </section>
+        </main>
+
+        {/* Right column */}
+        <aside className="w-[320px] shrink-0 bg-sage-light/40 flex flex-col h-full overflow-y-auto">
+          <div className="h-[220px] shrink-0 relative overflow-hidden">
+            <img src={cityImg} alt="" className="w-full h-full object-cover" loading="lazy" />
+            <div className="absolute bottom-4 left-4 bg-sidebar-dark/80 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-lg">AI Study Assistant</div>
+          </div>
+          <div className="flex-1 p-6 flex flex-col">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-extrabold">AI Tools</h3>
+              <button className="flex items-center gap-1 rounded-lg border bg-white px-3 py-1.5 text-xs font-semibold">
+                All <ChevronDown className="h-3 w-3" />
+              </button>
+            </div>
+            <div className="mt-4 flex-1 grid grid-cols-2 gap-3">
+              <AiToolCard icon={<ClipboardList className="h-5 w-5" />} label="Quiz Me" color="bg-coral/10 text-coral" />
+              <AiToolCard icon={<FlipHorizontal className="h-5 w-5" />} label="Flashcards" color="bg-leaf/20 text-leaf" />
+              <AiToolCard icon={<BookOpen className="h-5 w-5" />} label="Summarise" color="bg-sage text-secondary-foreground" />
+              <AiToolCard icon={<Mic className="h-5 w-5" />} label="Voice Notes" color="bg-primary/10 text-primary" />
+            </div>
+            <div className="flex justify-between text-[10px] text-muted-foreground mt-1 px-1">
+              {["Chem", "Econ", "Bio", "Math", "Phys", "Hist", "Art"].map((m) => (
+                <span key={m} className={m === "Bio" ? "text-coral font-bold" : ""}>{m}</span>
+              ))}
+            </div>
+            <div className="mt-4 rounded-2xl bg-gradient-to-r from-coral to-primary p-4 flex items-center gap-3 text-white">
+              <div className="text-2xl font-extrabold">4</div>
+              <div className="text-xs flex-1 leading-tight">Active course folders<br />with AI-ready documents</div>
+              <button className="h-9 w-9 rounded-full bg-white/25 backdrop-blur flex items-center justify-center">
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </AppShell>
+  );
+}
+
+function CourseFolder({ img, title, docCount, teacher }: { img: string; title: string; docCount: number; teacher: string }) {
+  return (
+    <div className="rounded-2xl bg-white border p-4 hover:shadow-md transition cursor-pointer">
+      <div className="h-24 rounded-xl bg-sage-light/60 flex items-center justify-center mb-3 overflow-hidden">
+        <img src={img} alt={title} className="h-full object-contain" loading="lazy" />
+      </div>
+      <h3 className="font-extrabold">{title}</h3>
+      <p className="text-xs text-muted-foreground mt-0.5">{teacher}</p>
+      <div className="mt-2 flex items-center gap-1 text-[10px] font-semibold text-coral">
+        <Folder className="h-3 w-3" />{docCount} documents
+      </div>
     </div>
   );
 }
 
-function ExamCountdown({ examDate }: { examDate: string }) {
-  if (!examDate) return null;
-  const days = Math.max(
-    0,
-    Math.ceil((new Date(examDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
-  );
-  const urgency = days <= 30 ? "text-red-400" : days <= 90 ? "text-yellow-400" : "text-accent";
-
+function DocumentRow({ color, title, course, size, status }: { color: string; title: string; course: string; size: string; status: "Assessed" | "Pending" }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
-      className="rounded-2xl border border-border bg-card p-5 flex items-center justify-between gap-4"
-    >
-      <div>
-        <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-          Exam Countdown
-        </div>
-        <div className={`text-3xl font-black mt-1 ${urgency}`}>
-          {days} <span className="text-lg font-semibold">days</span>
+    <div className="flex items-center gap-4 px-5 py-4">
+      <div className={`h-11 w-11 rounded-xl ${color} flex items-center justify-center shrink-0`}>
+        <FileText className="h-5 w-5" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <h4 className="font-bold truncate">{title}</h4>
+        <div className="flex items-center gap-4 mt-1 text-xs text-coral/80">
+          <span>📁 {course}</span>
+          <span>💾 {size}</span>
         </div>
       </div>
-      <div className="text-4xl">⏰</div>
-    </motion.div>
+      <div className="flex items-center gap-2 shrink-0">
+        {status === "Assessed"
+          ? <span className="rounded-lg bg-leaf/20 px-3 py-1.5 text-xs font-bold text-leaf flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Assessed</span>
+          : <span className="rounded-lg bg-sage px-3 py-1.5 text-xs font-bold text-secondary-foreground">Pending</span>}
+        <button className="text-muted-foreground hover:text-foreground"><MoreVertical className="h-4 w-4" /></button>
+      </div>
+    </div>
   );
 }
 
-function DailyPulse({ userType }: { userType: UserType }) {
-  const isSecondary = userType === "secondary";
-  const tasks = isSecondary
-    ? [
-        { done: true, label: "English Language — Comprehension passage" },
-        { done: false, label: "Mathematics — Indices & Logarithms" },
-        { done: false, label: "Biology — Cell biology quiz (10 Qs)" },
-      ]
-    : [
-        { done: true, label: "Review lecture notes — Week 5" },
-        { done: false, label: "Complete assignment — CSC 301" },
-        { done: false, label: "Practice quiz — Data Structures" },
-      ];
-
+function AiToolCard({ icon, label, color }: { icon: React.ReactNode; label: string; color: string }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.35, duration: 0.4 }}
-      className="rounded-2xl border border-accent/20 bg-accent/5 p-6 shadow-[0_0_40px_-12px_rgb(13_148_136_/_0.2)]"
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-widest text-accent">
-            Daily Pulse
-          </div>
-          <div className="text-base font-bold mt-0.5">Today's study plan</div>
-        </div>
-        <span className="text-2xl">⚡</span>
-      </div>
-      <div className="space-y-2.5">
-        {tasks.map((t, i) => (
-          <div
-            key={i}
-            className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm transition-all ${
-              t.done ? "bg-muted/50 text-muted-foreground line-through" : "bg-background/60 text-foreground"
-            }`}
-          >
-            <div
-              className={`h-4 w-4 shrink-0 rounded-full border-2 grid place-items-center ${
-                t.done ? "border-accent bg-accent" : "border-border"
-              }`}
-            >
-              {t.done && (
-                <svg viewBox="0 0 24 24" className="h-2.5 w-2.5 text-white" fill="none" stroke="currentColor" strokeWidth="3">
-                  <path d="M20 6L9 17l-5-5" />
-                </svg>
-              )}
-            </div>
-            {t.label}
-          </div>
-        ))}
-      </div>
-      <div className="mt-4 text-xs text-muted-foreground">
-        {tasks.filter((t) => t.done).length}/{tasks.length} tasks completed today
-      </div>
-    </motion.div>
-  );
-}
-
-export default function DashboardPage() {
-  const navigate = useNavigate();
-  const [profile, setProfile] = useState<DashboardProfile>({
-    full_name: "Student",
-    user_type: "tertiary",
-    school: "",
-    exam_date: "",
-    streak: 3,
-    xp: 1240,
-    level: 4,
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        navigate({ to: "/login" });
-        return;
-      }
-
-      const { data } = await supabase
-        .from("user_profiles")
-        .select("full_name,user_type,school,exam_date,streak,xp,level")
-        .eq("id", user.id)
-        .single();
-
-      if (data) {
-        setProfile({
-          full_name: data.full_name ?? user.user_metadata?.full_name ?? "Student",
-          user_type: data.user_type ?? "tertiary",
-          school: data.school ?? "",
-          exam_date: data.exam_date ?? "",
-          streak: data.streak ?? 0,
-          xp: data.xp ?? 0,
-          level: data.level ?? 1,
-        });
-      } else {
-        setProfile((p) => ({
-          ...p,
-          full_name: user.user_metadata?.full_name ?? "Student",
-        }));
-      }
-      setLoading(false);
-    }
-    load();
-  }, [navigate]);
-
-  const isSecondary = profile.user_type === "secondary";
-  const firstName = profile.full_name.split(" ")[0];
-
-  const hour = new Date().getHours();
-  const greeting =
-    hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-
-  const levelLabel = isSecondary
-    ? ["JAMB Starter", "WAEC Prep", "Exam Ready", "Sharp Student", "Star Candidate"][
-        Math.min(profile.level - 1, 4)
-      ]
-    : ["Fresher", "Sophomore", "Junior", "Senior", "Honours"][Math.min(profile.level - 1, 4)];
-
-  const quickActions = isSecondary
-    ? [
-        { icon: "📝", label: "JAMB Practice", description: "Timed mock exam — 40 questions", to: "/session" },
-        { icon: "📚", label: "My Subjects", description: "Manage your JAMB subjects", to: "/upload" },
-        { icon: "🎙️", label: "Voice Study", description: "Listen to AI explanations", to: "/session" },
-        { icon: "👥", label: "Community", description: "Get notes from other students", to: "/community" },
-      ]
-    : [
-        { icon: "🧠", label: "Continue Learning", description: "Pick up where you left off", to: "/session" },
-        { icon: "📂", label: "My Courses", description: "Manage course materials", to: "/upload" },
-        { icon: "🎙️", label: "Voice Study", description: "AI-powered audio lessons", to: "/session" },
-        { icon: "👥", label: "Community", description: "Share and import materials", to: "/community" },
-      ];
-
-  if (loading) {
-    return (
-      <AppShell>
-        <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-        </div>
-      </AppShell>
-    );
-  }
-
-  return (
-    <AppShell>
-      <div className="mx-auto max-w-3xl px-4 py-8 space-y-8">
-
-        {/* Hero Greeting */}
-        <motion.div
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="relative overflow-hidden rounded-3xl border border-accent/20 bg-gradient-to-br from-accent/10 via-background to-background p-7 shadow-[0_0_60px_-16px_rgb(13_148_136_/_0.25)]"
-        >
-          {/* Background glow blobs */}
-          <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-accent/15 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-8 left-1/3 h-32 w-32 rounded-full bg-accent/10 blur-2xl" />
-
-          <div className="relative">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-medium text-accent">{greeting} 👋</p>
-                <h1 className="text-2xl font-black tracking-tight mt-1">
-                  {firstName}
-                </h1>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="rounded-full bg-accent/20 px-2.5 py-0.5 text-xs font-semibold text-accent">
-                    {levelLabel}
-                  </span>
-                  {profile.school && (
-                    <span className="text-xs text-muted-foreground truncate max-w-[180px]">
-                      {profile.school}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="text-right shrink-0">
-                <div className="text-3xl font-black text-accent">{profile.streak}</div>
-                <div className="text-xs text-muted-foreground">day streak 🔥</div>
-              </div>
-            </div>
-
-            <StreakDots streak={profile.streak} />
-          </div>
-        </motion.div>
-
-        {/* Exam Countdown (secondary only) */}
-        {isSecondary && profile.exam_date && (
-          <ExamCountdown examDate={profile.exam_date} />
-        )}
-
-        {/* Daily Pulse */}
-        <DailyPulse userType={profile.user_type} />
-
-        {/* Stats */}
-        <div>
-          <motion.h2
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3"
-          >
-            Your Progress
-          </motion.h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatCard
-              icon="🔥"
-              label="Day Streak"
-              value={profile.streak}
-              sub="Keep it going!"
-              accent
-              delay={0.42}
-            />
-            <StatCard
-              icon="⚡"
-              label="XP Earned"
-              value={profile.xp.toLocaleString()}
-              sub={`Level ${profile.level}`}
-              delay={0.46}
-            />
-            <StatCard
-              icon={isSecondary ? "📖" : "📂"}
-              label={isSecondary ? "Subjects" : "Courses"}
-              value="—"
-              sub="Add materials"
-              delay={0.5}
-            />
-            <StatCard
-              icon="✅"
-              label="Quizzes Done"
-              value="—"
-              sub="Start a quiz"
-              delay={0.54}
-            />
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div>
-          <motion.h2
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3"
-          >
-            Quick Actions
-          </motion.h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {quickActions.map((a, i) => (
-              <QuickAction key={a.label} {...a} delay={0.52 + i * 0.06} />
-            ))}
-          </div>
-        </div>
-
-        {/* Life Happened banner — shown if no activity today */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.75 }}
-          className="rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-5 flex items-start gap-4"
-        >
-          <span className="text-2xl shrink-0">💛</span>
-          <div>
-            <div className="text-sm font-semibold">Life Happened Mode</div>
-            <div className="text-xs text-muted-foreground mt-0.5">
-              Missed a few days? No stress — your plan has been adjusted. You're back on track from
-              today. No streaks broken, no pressure.
-            </div>
-            <button
-              onClick={() => navigate({ to: "/session" })}
-              className="mt-3 text-xs font-semibold text-accent hover:underline"
-            >
-              See my updated plan →
-            </button>
-          </div>
-        </motion.div>
-      </div>
-    </AppShell>
+    <button className={`rounded-2xl ${color} p-4 flex flex-col items-start gap-2 hover:opacity-80 transition`}>
+      {icon}
+      <span className="text-xs font-bold">{label}</span>
+    </button>
   );
 }
