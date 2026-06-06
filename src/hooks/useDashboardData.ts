@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 export type StudySession = {
   id: string;
   subject: string;
+  topic?: string;
   score?: number;
   duration_min?: number;
   created_at: string;
@@ -104,11 +105,11 @@ export function useDashboardData(subjects: string[]): DashboardData {
   return state;
 }
 
-export function getActivityMap(sessions: StudySession[]): Record<string, number> {
-  const map: Record<string, number> = {};
+export function getActivityMap(sessions: StudySession[]): Record<string, boolean> {
+  const map: Record<string, boolean> = {};
   for (const s of sessions) {
     const key = new Date(s.created_at).toISOString().slice(0, 10);
-    map[key] = (map[key] ?? 0) + 1;
+    map[key] = true;
   }
   return map;
 }
