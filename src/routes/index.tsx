@@ -96,17 +96,17 @@ function Hero() {
           </div>
         </motion.div>
 
-        {/* Phone Mockup */}
+        {/* Phone Mockup — fixed in place, no scroll parallax */}
         <motion.div
-          style={{ y: yMock }}
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="relative flex items-center justify-center md:col-span-5"
         >
           <div className="relative mx-auto w-[260px]">
-            {/* Glow behind phone */}
-            <div className="absolute inset-0 -z-10 scale-110 rounded-[48px] bg-accent/20 blur-3xl" />
+            {/* Layered glow behind phone (static) */}
+            <div className="absolute inset-0 -z-10 scale-110 rounded-[48px] bg-accent/25 blur-3xl" />
+            <div className="absolute inset-0 -z-10 scale-[1.18] rounded-[48px] bg-accent/10 blur-[64px]" />
 
             {/* Phone frame */}
             <div className="relative rounded-[44px] border-[6px] border-border bg-background shadow-2xl overflow-hidden">
