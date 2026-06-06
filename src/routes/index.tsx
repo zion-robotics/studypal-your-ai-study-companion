@@ -35,9 +35,6 @@ const HERO_IMG = "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w
 const COLLAB_IMG = "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1400&q=80";
 const PROBLEM_IMG = "https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=1400&q=80";
 const COMMUNITY_IMG = "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80";
-const AV1 = "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&q=80";
-const AV2 = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80";
-const AV3 = "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200&q=80";
 
 function Hero() {
   const ref = useRef<HTMLDivElement>(null);
@@ -78,13 +75,7 @@ function Hero() {
               className="btn-press inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-medium text-accent-foreground"
             >
               Start Studying Free
-              <svg
-                viewBox="0 0 24 24"
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M5 12h14M13 5l7 7-7 7" />
               </svg>
             </Link>
@@ -105,75 +96,140 @@ function Hero() {
           </div>
         </motion.div>
 
-        {/* Simple Mockup */}
+        {/* Phone Mockup */}
         <motion.div
           style={{ y: yMock }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="relative md:col-span-5"
+          className="relative flex items-center justify-center md:col-span-5"
         >
-          <div className="mx-auto w-full max-w-md">
-            <div className="rounded-3xl border border-border bg-card p-5 shadow-xl">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-2.5 w-2.5 rounded-full bg-accent" />
-                  <div className="font-mono text-xs text-muted-foreground">DAY 12 / 38</div>
-                </div>
-                <div className="font-mono text-xs text-muted-foreground">JAMB BIO</div>
-              </div>
-              <div className="relative mx-auto my-2 grid h-44 w-44 place-items-center">
-                <svg viewBox="0 0 200 200" className="absolute inset-0 -rotate-90">
-                  <circle
-                    cx="100"
-                    cy="100"
-                    r="86"
-                    stroke="currentColor"
-                    className="text-muted"
-                    strokeWidth="14"
-                    fill="none"
-                  />
-                  <circle
-                    cx="100"
-                    cy="100"
-                    r="86"
-                    stroke="currentColor"
-                    className="text-accent"
-                    strokeWidth="14"
-                    fill="none"
-                    strokeDasharray="540"
-                    strokeDashoffset="160"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="text-center">
-                  <div className="font-display text-4xl">70%</div>
-                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    today
+          <div className="relative mx-auto w-[260px]">
+            {/* Glow behind phone */}
+            <div className="absolute inset-0 -z-10 scale-110 rounded-[48px] bg-accent/20 blur-3xl" />
+
+            {/* Phone frame */}
+            <div className="relative rounded-[44px] border-[6px] border-border bg-background shadow-2xl overflow-hidden">
+              {/* Notch */}
+              <div className="absolute left-1/2 top-0 z-10 h-6 w-24 -translate-x-1/2 rounded-b-2xl bg-border" />
+
+              {/* Screen content */}
+              <div className="flex flex-col bg-background px-4 pb-6 pt-10 min-h-[520px]">
+
+                {/* Status bar */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="font-mono text-[9px] text-muted-foreground">JAMB · BIO</div>
+                  <div className="flex items-center gap-1">
+                    <div className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+                    <div className="font-mono text-[9px] text-accent">LIVE</div>
                   </div>
                 </div>
-              </div>
-              <div className="mt-2 rounded-xl bg-muted p-3">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Next up
+
+                {/* Voice waveform */}
+                <div className="flex items-center justify-center gap-1 my-4">
+                  {[3, 6, 10, 14, 10, 18, 10, 14, 10, 6, 3].map((h, i) => (
+                    <motion.div
+                      key={i}
+                      className="w-1 rounded-full bg-accent"
+                      animate={{ height: [h, h * 2.2, h] }}
+                      transition={{
+                        duration: 0.8,
+                        repeat: Infinity,
+                        delay: i * 0.07,
+                        ease: "easeInOut",
+                      }}
+                      style={{ height: h }}
+                    />
+                  ))}
                 </div>
-                <div className="mt-1 text-sm font-medium">Cellular Respiration · 12 min</div>
-              </div>
-              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                {["7 day", "92%", "26 left"].map((s, i) => (
-                  <div key={i} className="rounded-lg border border-border p-2">
-                    <div className="font-mono text-sm">{s}</div>
-                    <div className="text-[10px] text-muted-foreground">
-                      {["streak", "avg", "days"][i]}
-                    </div>
+
+                {/* Now playing */}
+                <div className="rounded-2xl border border-accent/30 bg-accent/5 p-3 mt-2">
+                  <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Now reading</div>
+                  <div className="mt-1 text-sm font-medium leading-snug">Cellular Respiration</div>
+                  <div className="mt-0.5 font-mono text-[10px] text-muted-foreground">JAMB Biology · Topic 6 of 14</div>
+                </div>
+
+                {/* Progress */}
+                <div className="mt-4">
+                  <div className="flex justify-between font-mono text-[9px] text-muted-foreground mb-1">
+                    <span>Progress</span><span>42%</span>
                   </div>
-                ))}
+                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full bg-accent"
+                      initial={{ width: 0 }}
+                      animate={{ width: "42%" }}
+                      transition={{ duration: 1.4, ease: "easeOut", delay: 0.5 }}
+                    />
+                  </div>
+                </div>
+
+                {/* Comprehension check */}
+                <div className="mt-4 rounded-2xl border border-border bg-card p-3">
+                  <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Quick check</div>
+                  <div className="mt-1 text-xs leading-snug">What is the main product of glycolysis?</div>
+                  <div className="mt-2 flex flex-col gap-1.5">
+                    {["ATP only", "Pyruvate + ATP", "CO₂ + Water"].map((opt, i) => (
+                      <div
+                        key={i}
+                        className={`rounded-xl border px-2.5 py-1.5 text-[11px] font-medium ${
+                          i === 1
+                            ? "border-accent bg-accent/10 text-accent"
+                            : "border-border text-muted-foreground"
+                        }`}
+                      >
+                        {opt}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Mic button */}
+                <div className="mt-5 flex flex-col items-center gap-2">
+                  <motion.div
+                    animate={{
+                      boxShadow: [
+                        "0 0 0 0px rgb(13 148 136 / 0.4)",
+                        "0 0 0 10px rgb(13 148 136 / 0)",
+                        "0 0 0 0px rgb(13 148 136 / 0)",
+                      ],
+                    }}
+                    transition={{ duration: 1.6, repeat: Infinity }}
+                    className="grid h-12 w-12 place-items-center rounded-full bg-accent text-accent-foreground"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" />
+                    </svg>
+                  </motion.div>
+                  <div className="font-mono text-[9px] text-muted-foreground">Tap to answer</div>
+                </div>
+
               </div>
             </div>
-            <div className="absolute -bottom-6 -right-6 rounded-2xl border border-border bg-accent px-4 py-3 text-accent-foreground shadow-xl">
-              <div className="font-mono text-[10px] uppercase tracking-wider">offline ready</div>
-              <div className="font-display text-lg">No bars? No problem.</div>
-            </div>
+
+            {/* Streak badge */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
+              className="absolute -right-12 top-16 rounded-2xl border border-border bg-card px-3 py-2 shadow-lg"
+            >
+              <div className="font-mono text-[9px] text-muted-foreground uppercase tracking-wider">streak</div>
+              <div className="font-display text-lg text-accent">7 days 🔥</div>
+            </motion.div>
+
+            {/* Offline badge */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1, duration: 0.5 }}
+              className="absolute -left-12 bottom-24 rounded-2xl border border-border bg-card px-3 py-2 shadow-lg"
+            >
+              <div className="font-mono text-[9px] text-muted-foreground uppercase tracking-wider">offline</div>
+              <div className="font-display text-sm">No bars? ✓</div>
+            </motion.div>
           </div>
         </motion.div>
       </div>
@@ -271,7 +327,7 @@ const HOW_STEPS = [
 function WhoFor() {
   const cards = [
     {
-      badge: "University & Polytechnic",
+      badge: "University · Polytechnic · College",
       heading: "Studying while working?",
       desc: "You have lectures, assignments, and a job or business on the side. StudyPal breaks your coursework into 10-minute sessions you can do on your commute, lunch break, or before bed — and tracks your progress so nothing falls through the cracks.",
       points: [
@@ -343,7 +399,6 @@ function WhoFor() {
   );
 }
 
-
 function HowStep({
   index,
   t,
@@ -366,7 +421,7 @@ function HowStep({
   const reached = index <= activeIndex;
   const isActive = index === activeIndex;
   const isPast = index < activeIndex;
-  const cardOnRight = index % 2 === 0; // 0,2,4 → right
+  const cardOnRight = index % 2 === 0;
 
   const circle = (
     <motion.div
@@ -407,19 +462,15 @@ function HowStep({
 
   return (
     <div ref={ref} className="relative pb-16 last:pb-0">
-      {/* MOBILE: single column left=circle, right=card */}
       <div className="grid grid-cols-[56px_1fr] gap-5 md:hidden">
         {circle}
         {card}
       </div>
-
-      {/* DESKTOP: zigzag with center line */}
       <div className="hidden md:grid md:grid-cols-[1fr_72px_1fr] md:items-center md:gap-8">
         {cardOnRight ? (
           <>
             <div />
             <div className="flex items-center justify-center">
-              {/* horizontal connector going right */}
               <div
                 className={`absolute left-1/2 ml-9 h-px w-8 transition-colors duration-500 ${reached ? "bg-accent" : "bg-border"}`}
               />
@@ -461,18 +512,13 @@ function HowItWorks() {
           <div className="font-mono text-xs text-muted-foreground">02 / THE FLOW</div>
           <h2 className="mt-3 font-display text-4xl md:text-5xl">How StudyPal works.</h2>
         </div>
-
         <div ref={containerRef} className="relative">
-          {/* Center vertical line — desktop */}
           <div className="absolute left-[27px] top-0 hidden h-full w-px bg-border md:left-1/2 md:block md:-translate-x-1/2" />
-          {/* Mobile vertical line */}
           <div className="absolute left-[27px] top-0 h-full w-px bg-border md:hidden" />
-          {/* Active fill */}
           <motion.div
             style={{ scaleY: lineScale, transformOrigin: "top" }}
             className="absolute left-[27px] top-0 h-full w-px bg-accent md:left-1/2 md:-translate-x-1/2"
           />
-
           {HOW_STEPS.map((s, i) => (
             <HowStep
               key={i}
@@ -538,7 +584,6 @@ function Features() {
           </div>
           <img src={COLLAB_IMG} alt="" className="h-28 w-44 rounded-2xl object-cover" />
         </div>
-
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((f, i) => (
             <motion.div
@@ -590,9 +635,7 @@ function Counter({
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) setStart(true);
-      },
+      ([e]) => { if (e.isIntersecting) setStart(true); },
       { threshold: 0.4 },
     );
     io.observe(el);
@@ -601,8 +644,7 @@ function Counter({
   const v = useCountUp(value, duration, start);
   return (
     <span ref={ref} className="font-mono tabular-nums">
-      {Math.round(v)}
-      {suffix}
+      {Math.round(v)}{suffix}
     </span>
   );
 }
@@ -619,9 +661,7 @@ function Stats() {
         ].map((s, i) => (
           <div key={i}>
             <div className="font-display text-4xl leading-tight md:text-6xl">{s.display}</div>
-            <div className="mt-3 font-mono text-xs uppercase tracking-widest text-white/60">
-              {s.label}
-            </div>
+            <div className="mt-3 font-mono text-xs uppercase tracking-widest text-white/60">{s.label}</div>
           </div>
         ))}
       </div>
@@ -709,13 +749,7 @@ function FinalCTA() {
           className="btn-press mt-10 inline-flex items-center gap-2 rounded-full bg-accent px-8 py-4 text-base font-medium text-accent-foreground"
         >
           Create Your Free Account
-          <svg
-            viewBox="0 0 24 24"
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M5 12h14M13 5l7 7-7 7" />
           </svg>
         </Link>
@@ -735,18 +769,10 @@ function Footer() {
           </div>
         </div>
         <nav className="flex flex-wrap gap-6 text-sm text-muted-foreground">
-          <a href="#problem" className="hover:text-foreground">
-            About
-          </a>
-          <a href="#features" className="hover:text-foreground">
-            Features
-          </a>
-          <a href="#how" className="hover:text-foreground">
-            Hackathon
-          </a>
-          <a href="mailto:hello@studypal.app" className="hover:text-foreground">
-            Contact
-          </a>
+          <a href="#problem" className="hover:text-foreground">About</a>
+          <a href="#features" className="hover:text-foreground">Features</a>
+          <a href="#how" className="hover:text-foreground">Hackathon</a>
+          <a href="mailto:hello@studypal.app" className="hover:text-foreground">Contact</a>
         </nav>
       </div>
       <div className="mx-auto mt-10 max-w-7xl border-t border-border px-5 pt-6 font-mono text-xs text-muted-foreground">
