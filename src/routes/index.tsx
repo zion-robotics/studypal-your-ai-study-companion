@@ -41,7 +41,6 @@ function Hero() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const yBg = useTransform(scrollYProgress, [0, 1], [0, 180]);
   const yHead = useTransform(scrollYProgress, [0, 1], [0, -60]);
-  const yMock = useTransform(scrollYProgress, [0, 1], [0, -120]);
   const fade = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   return (
