@@ -5,7 +5,7 @@ export type StudySession = {
   id: string;
   subject: string;
   topic?: string;
-  score?: number | null;
+  score: number | null;
   duration_min?: number;
   created_at: string;
 };
