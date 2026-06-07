@@ -4,12 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/sp/AppShell";
 import { useProfile } from "@/hooks/useProfile";
 import { requireAuth } from "@/lib/guards";
-import {
-  getAethexVoices,
-  createStudyAgent,
-  startAethexSession,
-  sendSdpOffer,
-} from "@/lib/aethex.server";
+import { getAethexVoices, createStudyAgent, startAethexSession, sendSdpOffer } from "@/lib/aethex";
 
 export const Route = createFileRoute("/session")({
   ssr: false,
