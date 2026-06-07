@@ -378,25 +378,28 @@ function DashboardPage() {
           <div className="mt-6 rounded-2xl bg-white border p-6 flex items-center gap-6 shadow-sm">
             <PulseRing percent={todayPct} />
 
-            {/* ── CHANGED: stat pills — oval shape, centered text, no overflow ── */}
-            <div className="flex-1 grid grid-cols-3 gap-2 min-w-0">
+            {/* ── Stat pills — rounded rectangle, full label always visible ── */}
+            <div className="flex-1 grid grid-cols-3 gap-3 min-w-0">
               <StatPill
-                icon={<Flame className="h-3.5 w-3.5 shrink-0" />}
+                icon={<Flame className="h-4 w-4 shrink-0" />}
                 label="Day streak"
                 value={dataLoading ? "—" : `${progress.streak}`}
                 color="text-coral"
+                bg="bg-coral/8 border-coral/20"
               />
               <StatPill
-                icon={<CheckCircle2 className="h-3.5 w-3.5 shrink-0" />}
+                icon={<CheckCircle2 className="h-4 w-4 shrink-0" />}
                 label="Sessions done"
                 value={dataLoading ? "—" : `${progress.total_sessions}`}
                 color="text-leaf"
+                bg="bg-leaf/8 border-leaf/20"
               />
               <StatPill
-                icon={<TrendingUp className="h-3.5 w-3.5 shrink-0" />}
+                icon={<TrendingUp className="h-4 w-4 shrink-0" />}
                 label="Syllabus covered"
                 value={dataLoading ? "—" : `${progress.syllabus_coverage_percent}%`}
                 color="text-primary"
+                bg="bg-primary/8 border-primary/20"
               />
             </div>
 
@@ -635,17 +638,21 @@ function DashboardPage() {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-// ── CHANGED: StatPill — oval shape, all content centered, no text overflow ──
-function StatPill({ icon, label, value, color }: {
-  icon: React.ReactNode; label: string; value: string; color: string;
+// ── StatPill — rounded rectangle with border, full label, centered ──
+function StatPill({ icon, label, value, color, bg }: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  color: string;
+  bg: string;
 }) {
   return (
-    <div className="rounded-full border bg-sage-light/40 px-2 py-4 flex flex-col items-center justify-center gap-1.5 min-w-0 overflow-hidden">
-      <div className={`flex items-center justify-center gap-1 ${color} min-w-0 w-full px-1`}>
+    <div className={`rounded-2xl border ${bg} px-3 py-3.5 flex flex-col items-center justify-center gap-1.5 text-center`}>
+      <div className={`flex items-center justify-center gap-1.5 ${color}`}>
         {icon}
-        <span className="text-[10px] font-bold leading-tight truncate">{label}</span>
+        <span className="text-[11px] font-bold leading-tight">{label}</span>
       </div>
-      <p className="text-xl font-extrabold leading-none">{value}</p>
+      <p className="text-2xl font-extrabold leading-none">{value}</p>
     </div>
   );
 }
