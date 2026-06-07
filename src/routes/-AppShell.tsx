@@ -38,16 +38,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen overflow-hidden bg-background font-display">
 
       {/* Sidebar */}
-      <aside className="group/sidebar flex h-full flex-col items-center bg-sidebar-dark py-6
-        text-sidebar-dark-foreground overflow-y-auto shrink-0 overflow-x-hidden
+      <aside className="group/sidebar flex h-full flex-col items-center bg-background border-r border-border py-6
+        text-foreground overflow-y-auto shrink-0 overflow-x-hidden
         w-[72px] hover:w-[200px] transition-[width] duration-300 ease-in-out">
 
         {/* Logo */}
         <Link to="/dashboard" className="w-full px-4 flex items-center gap-3 shrink-0">
-          <div className="h-9 w-9 rounded-xl bg-coral flex items-center justify-center shrink-0">
-            <Zap className="h-5 w-5 text-white" />
+          <div className="h-9 w-9 rounded-xl bg-accent flex items-center justify-center shrink-0">
+            <Zap className="h-5 w-5 text-accent-foreground" />
           </div>
-          <span className="font-extrabold text-sm tracking-wide text-white
+          <span className="font-extrabold text-sm tracking-wide
             opacity-0 group-hover/sidebar:opacity-100
             transition-opacity duration-200 whitespace-nowrap overflow-hidden">
             StudyPal
@@ -63,8 +63,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <button
                   className={`w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-colors duration-150
                     ${active
-                      ? "bg-white text-sidebar-dark"
-                      : "text-white/60 hover:text-white hover:bg-white/10"
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     }`}
                 >
                   {/* Icon — always visible */}
@@ -86,13 +86,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           {/* User row */}
           <div className="flex items-center gap-3 px-2.5 py-2.5 rounded-xl">
-            <div className="h-8 w-8 rounded-full overflow-hidden bg-coral/80 flex items-center
-              justify-center text-white text-xs font-bold ring-2 ring-white/20 shrink-0">
+            <div className="h-8 w-8 rounded-full overflow-hidden bg-accent/20 flex items-center
+              justify-center text-accent text-xs font-bold ring-2 ring-accent/30 shrink-0">
               {avatarUrl
                 ? <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
                 : <span>{initials}</span>}
             </div>
-            <span className="text-xs text-white/70 font-medium truncate
+            <span className="text-xs text-muted-foreground font-medium truncate
               opacity-0 group-hover/sidebar:opacity-100
               transition-opacity duration-200 whitespace-nowrap overflow-hidden">
               {profile?.full_name ?? user?.email ?? ""}
@@ -103,7 +103,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl
-              text-white/60 hover:text-white hover:bg-white/10 transition-colors duration-150"
+              text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-150"
           >
             <LogOut className="h-5 w-5 shrink-0" />
             <span className="text-sm font-semibold whitespace-nowrap overflow-hidden
