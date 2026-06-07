@@ -231,10 +231,10 @@ function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="flex h-full overflow-hidden">
+      <div className="flex flex-col md:flex-row h-full overflow-hidden">
 
         {/* ── Left — Upload Panel ── */}
-        <section className="w-[280px] shrink-0 bg-sage-light p-6 flex flex-col h-full overflow-y-auto">
+        <section className="hidden md:flex w-[280px] shrink-0 bg-sage-light p-6 flex-col h-full overflow-y-auto">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold">Upload Notes</h2>
             <Link to="/courses" title="Go to courses">
@@ -304,11 +304,11 @@ function DashboardPage() {
         </section>
 
         {/* ── Main ── */}
-        <main className="flex-1 p-8 overflow-y-auto h-full">
+        <main className="flex-1 px-4 py-5 md:p-8 overflow-y-auto h-full">
           <header className="flex items-start justify-between">
             <div>
               <p className="text-sm font-semibold text-coral">{getGreeting()}, {firstName} 👋</p>
-              <h1 className="text-4xl font-extrabold tracking-tight mt-0.5">Daily Pulse</h1>
+              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight mt-0.5">Daily Pulse</h1>
               {(courseOfStudy || university) ? (
                 <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
                   <GraduationCap className="h-4 w-4" />
@@ -334,7 +334,7 @@ function DashboardPage() {
           <div className="mt-6 rounded-2xl bg-white border shadow-sm overflow-hidden">
 
             {/* Top row */}
-            <div className="flex items-center gap-8 px-8 py-6 border-b">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 px-5 md:px-8 py-5 md:py-6 border-b">
               <PulseRing percent={todayPct} />
               <div className="flex-1">
                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -354,7 +354,7 @@ function DashboardPage() {
                 </p>
               </div>
               <Link to="/session">
-                <button className="rounded-xl bg-gradient-to-b from-coral to-primary px-6 py-3.5 text-white font-bold text-sm shadow-lg shadow-coral/30 hover:opacity-95 transition flex items-center gap-2 shrink-0">
+                <button className="rounded-xl bg-gradient-to-b from-coral to-primary px-6 py-3.5 text-white font-bold text-sm shadow-lg shadow-coral/30 hover:opacity-95 transition flex items-center gap-2 w-full sm:w-auto justify-center">
                   <Zap className="h-4 w-4" /> Start Session
                 </button>
               </Link>
@@ -367,7 +367,7 @@ function DashboardPage() {
                   <Flame className="h-4 w-4" />
                   <span className="text-xs font-bold uppercase tracking-wide">Day Streak</span>
                 </div>
-                <p className="text-3xl font-extrabold">
+                <p className="text-2xl md:text-3xl font-extrabold">
                   {dataLoading ? "—" : progress.streak}
                 </p>
                 <p className="text-[11px] text-muted-foreground">
@@ -467,9 +467,9 @@ function DashboardPage() {
           </div>
 
           {/* ── Subjects ── */}
-          <div className="mt-5 grid grid-cols-[80px_repeat(3,1fr)] gap-4">
+          <div className="mt-5 flex gap-3 overflow-x-auto pb-1 md:grid md:grid-cols-[80px_repeat(3,1fr)] md:gap-4 scrollbar-hide">
             <Link to="/courses" title="Add a new subject">
-              <button className="rounded-2xl border-2 border-dashed border-border bg-white/50 flex flex-col items-center justify-center gap-3 py-6 hover:border-coral transition w-full h-full">
+              <button className="rounded-2xl border-2 border-dashed border-border bg-white/50 flex flex-col items-center justify-center gap-3 py-6 hover:border-coral transition w-20 md:w-full shrink-0 h-full">
                 <span className="[writing-mode:vertical-rl] rotate-180 text-sm font-semibold text-muted-foreground">New Subject</span>
                 <div className="h-7 w-7 rounded-md bg-coral/10 text-coral flex items-center justify-center">
                   <Plus className="h-4 w-4" />
@@ -487,7 +487,7 @@ function DashboardPage() {
                 ))
               : topCourses.length > 0
               ? topCourses.map((c) => (
-                  <Link key={c.id} to="/courses">
+                  <Link key={c.id} to="/courses" className="shrink-0 w-[140px] md:w-auto">
                     <CourseFolderCard img={c.img} title={c.title} docCount={c.doc_count} teacher={c.teacher ?? ""} />
                   </Link>
                 ))
@@ -541,10 +541,55 @@ function DashboardPage() {
               }
             </div>
           </section>
+
+{/* Mobile Study Tools — hidden on desktop */}
+<section className="mt-6 lg:hidden">
+  <h2 className="text-xl font-extrabold mb-3">Study Tools</h2>
+  <div className="grid grid-cols-2 gap-3">
+    <Link to="/session">
+      <div className="rounded-2xl bg-coral/10 text-coral p-4 flex flex-col items-start gap-2">
+        <Mic className="h-5 w-5" />
+        <span className="text-xs font-bold">Voice Study</span>
+      </div>
+    </Link>
+    <Link to="/session">
+      <div className="rounded-2xl bg-leaf/20 text-leaf p-4 flex flex-col items-start gap-2">
+        <ClipboardList className="h-5 w-5" />
+        <span className="text-xs font-bold">Quiz Me</span>
+      </div>
+    </Link>
+    <Link to="/courses">
+      <div className="rounded-2xl bg-sage text-secondary-foreground p-4 flex flex-col items-start gap-2">
+        <BookOpen className="h-5 w-5" />
+        <span className="text-xs font-bold">My Lessons</span>
+      </div>
+    </Link>
+    <Link to="/session">
+      <div className="rounded-2xl bg-primary/10 text-primary p-4 flex flex-col items-start gap-2">
+        <Brain className="h-5 w-5" />
+        <span className="text-xs font-bold">AI Explain</span>
+      </div>
+    </Link>
+  </div>
+</section>
+
+{/* Mobile Upload CTA — hidden on desktop */}
+<div className="mt-6 mb-6 lg:hidden rounded-2xl bg-gradient-to-r from-coral to-primary p-5 flex items-center justify-between gap-4 text-white">
+  <div>
+    <p className="font-bold text-sm">Drop your lecture notes</p>
+    <p className="text-xs opacity-80 mt-0.5">StudyPal structures them automatically</p>
+  </div>
+  <Link to="/courses">
+    <button className="rounded-xl bg-white/25 border border-white/30 text-white text-xs font-bold px-4 py-2.5 flex items-center gap-1.5 shrink-0 hover:bg-white/35 transition">
+      <Upload className="h-3.5 w-3.5" /> Upload
+    </button>
+  </Link>
+</div>
+
         </main>
 
         {/* ── Right — Study Tools ── */}
-        <aside className="w-[300px] shrink-0 bg-sage-light/40 flex flex-col h-full overflow-y-auto">
+        <aside className="hidden lg:flex w-[300px] shrink-0 bg-sage-light/40 flex-col h-full overflow-y-auto">
           <div className="h-[200px] shrink-0 relative overflow-hidden">
             <img src={cityImg} alt="" className="w-full h-full object-cover" loading="lazy" />
             <div className="absolute bottom-4 left-4 bg-sidebar-dark/80 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-lg">
