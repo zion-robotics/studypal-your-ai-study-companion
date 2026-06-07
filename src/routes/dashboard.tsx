@@ -5,7 +5,7 @@ import {
   ChevronRight, ChevronDown, FilePlus, Search,
   Sparkles, CheckCircle2, MoreVertical,
   ClipboardList, BookOpen, Mic, X, FolderOpen,
-  Flame, Target, Calendar, Zap, Brain,
+  Flame, Calendar, Zap, Brain,
   GraduationCap, TrendingUp,
 } from "lucide-react";
 import { AppShell } from "./-AppShell";
@@ -28,8 +28,6 @@ export const Route = createFileRoute("/dashboard")({
   }),
   component: DashboardPage,
 });
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface RecentDoc {
   id: string;
@@ -57,8 +55,6 @@ interface StudyProgress {
   last_active: string | null;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function formatBytes(bytes: number | null): string {
   if (!bytes) return "—";
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -72,16 +68,8 @@ function getGreeting(): string {
   return "Good evening";
 }
 
-function getDaysRemaining(deadline: string | null): number {
-  if (!deadline) return 0;
-  const diff = new Date(deadline).getTime() - Date.now();
-  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-}
-
 const COURSE_IMAGES = [chemImg, econImg, bioImg, bioImg];
 const DOC_COLORS = ["bg-sage", "bg-leaf/20", "bg-coral/15", "bg-primary/10"];
-
-// ─── Daily Pulse Ring ─────────────────────────────────────────────────────────
 
 function PulseRing({ percent }: { percent: number }) {
   const r = 54;
@@ -109,18 +97,16 @@ function PulseRing({ percent }: { percent: number }) {
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 function DashboardPage() {
   const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const [allFolders, setAllFolders]     = useState<CourseFolder[]>([]);
-  const [topCourses, setTopCourses]     = useState<CourseFolder[]>([]);
-  const [recentDocs, setRecentDocs]     = useState<RecentDoc[]>([]);
-  const [unreadCount, setUnreadCount]   = useState(0);
-  const [dataLoading, setDataLoading]   = useState(true);
-  const [progress, setProgress]         = useState<StudyProgress>({
+  const [allFolders, setAllFolders]   = useState<CourseFolder[]>([]);
+  const [topCourses, setTopCourses]   = useState<CourseFolder[]>([]);
+  const [recentDocs, setRecentDocs]   = useState<RecentDoc[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [dataLoading, setDataLoading] = useState(true);
+  const [progress, setProgress]       = useState<StudyProgress>({
     streak: 0, total_sessions: 0,
     syllabus_coverage_percent: 0, last_active: null,
   });
@@ -128,7 +114,7 @@ function DashboardPage() {
   const [searchQuery, setSearchQuery]     = useState("");
   const [searchResults, setSearchResults] = useState<{ docs: RecentDoc[]; folders: CourseFolder[] } | null>(null);
   const [searchFocused, setSearchFocused] = useState(false);
-  const searchRef  = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const [courseOpen, setCourseOpen]         = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<CourseFolder | null>(null);
@@ -141,7 +127,6 @@ function DashboardPage() {
   const university    = profile?.university ?? null;
   const courseOfStudy = profile?.course_of_study ?? null;
 
-  // ── Data load ───────────────────────────────────────────────────────────────
   useEffect(() => {
     if (authLoading || !user) return;
     void fetchDashboardData();
@@ -150,10 +135,7 @@ function DashboardPage() {
   async function fetchDashboardData() {
     setDataLoading(true);
     try {
-      await Promise.all([
-        fetchCourses(), fetchRecentDocs(),
-        fetchNotifications(), fetchProgress(),
-      ]);
+      await Promise.all([fetchCourses(), fetchRecentDocs(), fetchNotifications(), fetchProgress()]);
     } finally {
       setDataLoading(false);
     }
@@ -165,13 +147,10 @@ function DashboardPage() {
       .select("id, title, teacher_name, parent_id, created_at")
       .eq("user_id", user!.id)
       .order("created_at", { ascending: false });
-
     if (error || !data || data.length === 0) return;
 
     const { data: docRows } = await supabase
-      .from("documents")
-      .select("folder_id")
-      .eq("user_id", user!.id);
+      .from("documents").select("folder_id").eq("user_id", user!.id);
 
     const countMap: Record<string, number> = {};
     for (const d of (docRows ?? [])) {
@@ -179,8 +158,7 @@ function DashboardPage() {
     }
 
     const folders: CourseFolder[] = data.map((c: any, i: number) => ({
-      id: c.id, title: c.title,
-      teacher: c.teacher_name ?? null,
+      id: c.id, title: c.title, teacher: c.teacher_name ?? null,
       doc_count: countMap[c.id] ?? 0,
       img: COURSE_IMAGES[i % COURSE_IMAGES.length],
       parent_id: c.parent_id ?? null,
@@ -197,9 +175,7 @@ function DashboardPage() {
       .eq("user_id", user!.id)
       .order("created_at", { ascending: false })
       .limit(5);
-
     if (error || !data || data.length === 0) return;
-
     setRecentDocs(data.map((d: any, i: number) => ({
       ...d,
       status: d.status === "assessed" ? "Assessed" : "Pending",
@@ -211,8 +187,7 @@ function DashboardPage() {
     const { count } = await supabase
       .from("notifications")
       .select("id", { count: "exact", head: true })
-      .eq("user_id", user!.id)
-      .eq("read", false);
+      .eq("user_id", user!.id).eq("read", false);
     setUnreadCount(count ?? 0);
   }
 
@@ -222,11 +197,9 @@ function DashboardPage() {
       .select("streak, total_sessions, syllabus_coverage_percent, last_active")
       .eq("user_id", user!.id)
       .maybeSingle();
-
     if (data) setProgress(data);
   }
 
-  // ── Search ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!searchQuery.trim()) { setSearchResults(null); return; }
     const q = searchQuery.toLowerCase();
@@ -238,8 +211,7 @@ function DashboardPage() {
 
   useEffect(() => {
     function handler(e: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node))
-        setSearchFocused(false);
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSearchFocused(false);
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -247,8 +219,7 @@ function DashboardPage() {
 
   useEffect(() => {
     function handler(e: MouseEvent) {
-      if (courseDropRef.current && !courseDropRef.current.contains(e.target as Node))
-        setCourseOpen(false);
+      if (courseDropRef.current && !courseDropRef.current.contains(e.target as Node)) setCourseOpen(false);
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -262,7 +233,7 @@ function DashboardPage() {
     <AppShell>
       <div className="flex h-full overflow-hidden">
 
-        {/* ── Left — Upload Panel ───────────────────────────────────── */}
+        {/* ── Left — Upload Panel ── */}
         <section className="w-[280px] shrink-0 bg-sage-light p-6 flex flex-col h-full overflow-y-auto">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold">Upload Notes</h2>
@@ -273,7 +244,6 @@ function DashboardPage() {
             </Link>
           </div>
 
-          {/* User card */}
           <div className="mt-5 rounded-2xl bg-white border px-4 py-3 flex items-center gap-3">
             <div className="h-10 w-10 rounded-full overflow-hidden bg-coral/80 flex items-center justify-center text-white text-sm font-bold shrink-0 ring-2 ring-coral/20">
               {avatarUrl
@@ -283,9 +253,7 @@ function DashboardPage() {
             <div className="min-w-0">
               <p className="font-extrabold text-sm truncate">{displayName}</p>
               <p className="text-[10px] text-muted-foreground truncate">
-                {courseOfStudy
-                  ? `${courseOfStudy}${university ? ` · ${university}` : ""}`
-                  : (user?.email ?? "")}
+                {courseOfStudy ? `${courseOfStudy}${university ? ` · ${university}` : ""}` : (user?.email ?? "")}
               </p>
             </div>
           </div>
@@ -300,18 +268,14 @@ function DashboardPage() {
               StudyPal structures them into lessons automatically
             </p>
 
-            {/* Course selector */}
             <div ref={courseDropRef} className="relative mb-3">
-              <button
-                onClick={() => setCourseOpen((o) => !o)}
-                className="w-full rounded-xl border bg-white px-3 py-2 flex items-center justify-between text-sm font-medium cursor-pointer hover:bg-white/80 transition"
-              >
+              <button onClick={() => setCourseOpen((o) => !o)}
+                className="w-full rounded-xl border bg-white px-3 py-2 flex items-center justify-between text-sm font-medium cursor-pointer hover:bg-white/80 transition">
                 <span className={selectedCourse ? "text-foreground" : "text-muted-foreground"}>
                   {selectedCourse ? selectedCourse.title : (hasNoFolders ? "No subjects yet" : "Select a subject…")}
                 </span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
               </button>
-
               {courseOpen && (
                 <div className="absolute top-full left-0 right-0 mt-1 z-30 rounded-xl border bg-white shadow-lg py-1 max-h-48 overflow-y-auto">
                   {hasNoFolders ? (
@@ -320,13 +284,8 @@ function DashboardPage() {
                     </Link>
                   ) : (
                     allFolders.map((f) => (
-                      <button
-                        key={f.id}
-                        onClick={() => { setSelectedCourse(f); setCourseOpen(false); }}
-                        className={`w-full text-left px-4 py-2.5 text-sm hover:bg-sage-light transition flex items-center gap-2 ${
-                          selectedCourse?.id === f.id ? "font-bold text-coral" : "text-foreground"
-                        }`}
-                      >
+                      <button key={f.id} onClick={() => { setSelectedCourse(f); setCourseOpen(false); }}
+                        className={`w-full text-left px-4 py-2.5 text-sm hover:bg-sage-light transition flex items-center gap-2 ${selectedCourse?.id === f.id ? "font-bold text-coral" : "text-foreground"}`}>
                         <Folder className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                         <span className="truncate">{f.title}</span>
                       </button>
@@ -344,21 +303,18 @@ function DashboardPage() {
           </div>
         </section>
 
-        {/* ── Main ─────────────────────────────────────────────────── */}
+        {/* ── Main ── */}
         <main className="flex-1 p-8 overflow-y-auto h-full">
           <header className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-semibold text-coral">
-                {getGreeting()}, {firstName} 👋
-              </p>
+              <p className="text-sm font-semibold text-coral">{getGreeting()}, {firstName} 👋</p>
               <h1 className="text-4xl font-extrabold tracking-tight mt-0.5">Daily Pulse</h1>
-              {(courseOfStudy || university) && (
+              {(courseOfStudy || university) ? (
                 <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
                   <GraduationCap className="h-4 w-4" />
                   {[courseOfStudy, university].filter(Boolean).join(" · ")}
                 </p>
-              )}
-              {!courseOfStudy && !university && (
+              ) : (
                 <p className="text-sm text-muted-foreground mt-1">
                   Your AI-powered study companion — built for African students
                 </p>
@@ -374,43 +330,76 @@ function DashboardPage() {
             </button>
           </header>
 
-          {/* ── Daily Pulse Card ────────────────────────────────────── */}
-          <div className="mt-6 rounded-2xl bg-white border p-6 flex items-center gap-6 shadow-sm">
-            <PulseRing percent={todayPct} />
+          {/* ── Daily Pulse Card ── */}
+          <div className="mt-6 rounded-2xl bg-white border shadow-sm overflow-hidden">
 
-            {/* ── Stat pills — rounded rectangle, full label always visible ── */}
-            <div className="flex-1 grid grid-cols-3 gap-3 min-w-0">
-              <StatPill
-                icon={<Flame className="h-4 w-4 shrink-0" />}
-                label="Day streak"
-                value={dataLoading ? "—" : `${progress.streak}`}
-                color="text-coral"
-                bg="bg-coral/8 border-coral/20"
-              />
-              <StatPill
-                icon={<CheckCircle2 className="h-4 w-4 shrink-0" />}
-                label="Sessions done"
-                value={dataLoading ? "—" : `${progress.total_sessions}`}
-                color="text-leaf"
-                bg="bg-leaf/8 border-leaf/20"
-              />
-              <StatPill
-                icon={<TrendingUp className="h-4 w-4 shrink-0" />}
-                label="Syllabus covered"
-                value={dataLoading ? "—" : `${progress.syllabus_coverage_percent}%`}
-                color="text-primary"
-                bg="bg-primary/8 border-primary/20"
-              />
+            {/* Top row */}
+            <div className="flex items-center gap-8 px-8 py-6 border-b">
+              <PulseRing percent={todayPct} />
+              <div className="flex-1">
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  Today's Progress
+                </p>
+                <h2 className="text-2xl font-extrabold mt-1">
+                  {todayPct === 0
+                    ? "Ready to start studying?"
+                    : todayPct < 50
+                    ? "Good start — keep going!"
+                    : "You're crushing it today 🔥"}
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {todayPct === 0
+                    ? "Start a session and your progress will appear here."
+                    : `${todayPct}% of today's plan completed.`}
+                </p>
+              </div>
+              <Link to="/session">
+                <button className="rounded-xl bg-gradient-to-b from-coral to-primary px-6 py-3.5 text-white font-bold text-sm shadow-lg shadow-coral/30 hover:opacity-95 transition flex items-center gap-2 shrink-0">
+                  <Zap className="h-4 w-4" /> Start Session
+                </button>
+              </Link>
             </div>
 
-            <Link to="/session">
-              <button className="rounded-xl bg-gradient-to-b from-coral to-primary px-5 py-3 text-white font-bold text-sm shadow-lg shadow-coral/30 hover:opacity-95 transition whitespace-nowrap flex items-center gap-2">
-                <Zap className="h-4 w-4" /> Start Session
-              </button>
-            </Link>
+            {/* Stats row */}
+            <div className="grid grid-cols-3 divide-x">
+              <div className="flex flex-col items-center justify-center py-6 gap-1.5">
+                <div className="flex items-center gap-1.5 text-coral">
+                  <Flame className="h-4 w-4" />
+                  <span className="text-xs font-bold uppercase tracking-wide">Day Streak</span>
+                </div>
+                <p className="text-3xl font-extrabold">
+                  {dataLoading ? "—" : progress.streak}
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  {progress.streak === 1 ? "day in a row" : "days in a row"}
+                </p>
+              </div>
+
+              <div className="flex flex-col items-center justify-center py-6 gap-1.5">
+                <div className="flex items-center gap-1.5 text-leaf">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span className="text-xs font-bold uppercase tracking-wide">Sessions Done</span>
+                </div>
+                <p className="text-3xl font-extrabold">
+                  {dataLoading ? "—" : progress.total_sessions}
+                </p>
+                <p className="text-[11px] text-muted-foreground">total sessions</p>
+              </div>
+
+              <div className="flex flex-col items-center justify-center py-6 gap-1.5">
+                <div className="flex items-center gap-1.5 text-primary">
+                  <TrendingUp className="h-4 w-4" />
+                  <span className="text-xs font-bold uppercase tracking-wide">Syllabus Covered</span>
+                </div>
+                <p className="text-3xl font-extrabold">
+                  {dataLoading ? "—" : `${progress.syllabus_coverage_percent}%`}
+                </p>
+                <p className="text-[11px] text-muted-foreground">of your material</p>
+              </div>
+            </div>
           </div>
 
-          {/* ── Search ─────────────────────────────────────────────── */}
+          {/* ── Search ── */}
           <div ref={searchRef} className="mt-5 relative">
             <div className="flex items-center justify-between rounded-2xl bg-white border px-5 py-4 shadow-sm">
               <div className="flex items-center gap-3 text-sm font-medium flex-1">
@@ -477,7 +466,7 @@ function DashboardPage() {
             )}
           </div>
 
-          {/* ── Subjects ───────────────────────────────────────────── */}
+          {/* ── Subjects ── */}
           <div className="mt-5 grid grid-cols-[80px_repeat(3,1fr)] gap-4">
             <Link to="/courses" title="Add a new subject">
               <button className="rounded-2xl border-2 border-dashed border-border bg-white/50 flex flex-col items-center justify-center gap-3 py-6 hover:border-coral transition w-full h-full">
@@ -516,8 +505,8 @@ function DashboardPage() {
             }
           </div>
 
-          {/* ── Recent Materials ────────────────────────────────────── */}
-          <section className="mt-8">
+          {/* ── Recent Materials ── */}
+          <section className="mt-8 pb-8">
             <h2 className="text-2xl font-extrabold">Recent Materials</h2>
             <div className="mt-4 rounded-2xl bg-white border divide-y">
               {dataLoading
@@ -554,9 +543,9 @@ function DashboardPage() {
           </section>
         </main>
 
-        {/* ── Right — AI Study Tools ────────────────────────────────── */}
-        <aside className="w-[320px] shrink-0 bg-sage-light/40 flex flex-col h-full overflow-y-auto">
-          <div className="h-[220px] shrink-0 relative overflow-hidden">
+        {/* ── Right — Study Tools ── */}
+        <aside className="w-[300px] shrink-0 bg-sage-light/40 flex flex-col h-full overflow-y-auto">
+          <div className="h-[200px] shrink-0 relative overflow-hidden">
             <img src={cityImg} alt="" className="w-full h-full object-cover" loading="lazy" />
             <div className="absolute bottom-4 left-4 bg-sidebar-dark/80 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-lg">
               StudyPal AI
@@ -568,9 +557,9 @@ function DashboardPage() {
             )}
           </div>
 
-          <div className="flex-1 p-6 flex flex-col">
+          <div className="flex-1 p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-extrabold">Study Tools</h3>
+              <h3 className="text-lg font-extrabold">Study Tools</h3>
               <Link to="/session">
                 <button className="flex items-center gap-1 rounded-lg border bg-white px-3 py-1.5 text-xs font-semibold hover:bg-sage-light transition">
                   Start <ChevronRight className="h-3 w-3" />
@@ -578,7 +567,7 @@ function DashboardPage() {
               </Link>
             </div>
 
-            <div className="mt-4 flex-1 grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <Link to="/session">
                 <AiToolCard icon={<Mic className="h-5 w-5" />} label="Voice Study" color="bg-coral/10 text-coral" />
               </Link>
@@ -593,8 +582,8 @@ function DashboardPage() {
               </Link>
             </div>
 
-            {/* Life Happened Mode */}
-            <div className="mt-4 rounded-2xl border bg-white p-4 flex items-start gap-3">
+            {/* Life Happened */}
+            <div className="rounded-2xl border bg-white p-4 flex items-start gap-3">
               <div className="h-8 w-8 rounded-xl bg-coral/10 text-coral flex items-center justify-center shrink-0">
                 <Calendar className="h-4 w-4" />
               </div>
@@ -609,8 +598,8 @@ function DashboardPage() {
               </div>
             </div>
 
-            {/* Active subjects counter */}
-            <Link to="/courses" className="mt-3">
+            {/* Active subjects */}
+            <Link to="/courses">
               <div className="rounded-2xl bg-gradient-to-r from-coral to-primary p-4 flex items-center gap-3 text-white hover:opacity-95 transition cursor-pointer">
                 <div className="text-2xl font-extrabold">
                   {dataLoading ? "—" : topCourses.length}
@@ -625,7 +614,7 @@ function DashboardPage() {
             </Link>
 
             {user?.email && (
-              <p className="mt-3 text-[10px] text-muted-foreground text-center truncate px-2">
+              <p className="text-[10px] text-muted-foreground text-center truncate px-2">
                 {user.email}
               </p>
             )}
@@ -633,27 +622,6 @@ function DashboardPage() {
         </aside>
       </div>
     </AppShell>
-  );
-}
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-// ── StatPill — rounded rectangle with border, full label, centered ──
-function StatPill({ icon, label, value, color, bg }: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  color: string;
-  bg: string;
-}) {
-  return (
-    <div className={`rounded-2xl border ${bg} px-3 py-3.5 flex flex-col items-center justify-center gap-1.5 text-center`}>
-      <div className={`flex items-center justify-center gap-1.5 ${color}`}>
-        {icon}
-        <span className="text-[11px] font-bold leading-tight">{label}</span>
-      </div>
-      <p className="text-2xl font-extrabold leading-none">{value}</p>
-    </div>
   );
 }
 
