@@ -524,18 +524,104 @@ Respond in plain text without markdown. Be educational and encouraging.`,
               {(phase === "workspace") && (
                 <motion.div key="workspace" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} className="space-y-5">
 
-                  {/* Error / no lesson */}
-                  {error && !lesson && (
-                    <div className="rounded-2xl bg-accent/5 border border-accent/20 p-6 flex flex-col items-center text-center gap-3">
-                      <div className="h-14 w-14 rounded-2xl bg-accent/10 flex items-center justify-center">
-                        <Zap className="h-7 w-7 text-accent" />
+                  {/* ── Landing / empty state (no lesson loaded yet) ── */}
+                  {error && !lesson && !docData && (
+                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="pt-4 sm:pt-8 space-y-8">
+
+                      {/* Hero heading */}
+                      <div>
+                        <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl">
+                          What are we studying today?
+                        </h1>
+                        <p className="mt-3 text-[15px] text-muted-foreground leading-relaxed">
+                          Upload a document, paste notes, or ask a question. I will take it from there.
+                        </p>
                       </div>
-                      <p className="font-bold text-lg">{error}</p>
-                      <Link to="/upload" className="rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground">
-                        Upload Notes →
-                      </Link>
-                    </div>
+
+                      {/* Upload card */}
+                      <motion.button
+                        whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                        className="group w-full rounded-3xl border-2 border-dashed border-border bg-card p-8 text-left transition hover:border-accent/50 hover:bg-accent/5 disabled:opacity-60"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="grid h-10 w-10 place-items-center rounded-xl border border-border bg-background text-muted-foreground transition group-hover:text-accent">
+                            {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                          </div>
+                          <div>
+                            <p className="text-[15px] font-semibold text-foreground">
+                              {isUploading ? "Processing your document..." : "Drop a file, or click to upload"}
+                            </p>
+                            <p className="mt-1 text-sm text-muted-foreground">PDF, TXT or image up to 50 MB</p>
+                          </div>
+                        </div>
+                      </motion.button>
+
+                      {/* Quick prompts */}
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Try asking</p>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            "Summarise my lecture notes",
+                            "Make 10 quiz questions",
+                            "Explain like I am new to this",
+                            "Build flashcards for key terms",
+                          ].map((s) => (
+                            <button key={s}
+                              onClick={() => sendChatMessage(s)}
+                              className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs text-muted-foreground transition hover:border-accent/40 hover:bg-accent/5 hover:text-foreground">
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Voice CTA */}
+                      <div className="border-t border-border pt-6">
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Or jump straight into a voice session with your AI tutor
+                        </p>
+                        <div className="flex items-center gap-3 flex-wrap">
+                          {isOnline ? (
+                            <button
+                              onClick={voice.startVoiceSession}
+                              disabled={voice.voicePhase === "connecting"}
+                              className="flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 disabled:opacity-60 transition"
+                            >
+                              {voice.voicePhase === "connecting"
+                                ? <><Loader2 className="h-4 w-4 animate-spin" /> Connecting...</>
+                                : <><Mic className="h-4 w-4" /> Start voice session</>
+                              }
+                            </button>
+                          ) : (
+                            <button
+                              onClick={toggleOfflineTts}
+                              className="flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:opacity-90 transition"
+                            >
+                              {ttsPlaying ? <><Pause className="h-4 w-4" /> Stop</> : <><Play className="h-4 w-4" /> Listen offline</>}
+                            </button>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {isOnline ? "Powered by Aethex · Nigerian voices available" : "Offline mode · Browser speech"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Chat on empty state */}
+                      <ChatSection
+                        messages={messages}
+                        isLoading={chatLoading}
+                        input={chatInput}
+                        onInputChange={setChatInput}
+                        onSend={sendChatMessage}
+                        hasDoc={false}
+                      />
+                    </motion.div>
                   )}
+
+                  {/* ── Loaded workspace (lesson or doc exists) ── */}
+                  {(lesson || docData) && (<>
 
                   {/* Exam banner */}
                   {!isTertiary && lesson && (
@@ -601,16 +687,16 @@ Respond in plain text without markdown. Be educational and encouraging.`,
                   )}
 
                   {/* Chat */}
-                  {(lesson || docData) && (
-                    <ChatSection
-                      messages={messages}
-                      isLoading={chatLoading}
-                      input={chatInput}
-                      onInputChange={setChatInput}
-                      onSend={sendChatMessage}
-                      hasDoc={!!docData || !!lesson}
-                    />
-                  )}
+                  <ChatSection
+                    messages={messages}
+                    isLoading={chatLoading}
+                    input={chatInput}
+                    onInputChange={setChatInput}
+                    onSend={sendChatMessage}
+                    hasDoc={!!docData || !!lesson}
+                  />
+
+                  </>)}
                 </motion.div>
               )}
 
