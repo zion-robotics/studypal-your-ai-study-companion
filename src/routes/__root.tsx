@@ -146,7 +146,14 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    const routeAfterSignIn = async (session: NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]>) => {
+    // Only redirect after a genuine OAuth/magic-link callback — when Supabase
+    // puts the access_token in the URL hash. On every other page load this
+    // will be false, so session-restore "SIGNED_IN" events won't redirect.
+    const hasAuthHash = window.location.hash.includes("access_token");
+
+    const routeAfterSignIn = async (
+      session: NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]>,
+    ) => {
       const { data: profile } = await supabase
         .from("user_profiles")
         .select("onboarding_completed")
@@ -164,17 +171,22 @@ function RootComponent() {
       }
     };
 
-    const hasAuthHash = window.location.hash.includes("access_token");
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      // Guard: only redirect when we're actually handling an auth callback.
+      // Without this guard, Supabase fires "SIGNED_IN" on every page load
+      // when it restores the session from localStorage, which caused every
+      // route to redirect back to /dashboard.
+      if (event === "SIGNED_IN" && session && hasAuthHash) {
+        void routeAfterSignIn(session);
+      }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === "SIGNED_IN" && session) {
-          void routeAfterSignIn(session);
-        }
-        void router.invalidate();
-      },
-    );
+      void router.invalidate();
+    });
 
+    // Also handle the case where the page loads with the hash already present
+    // (e.g. user lands directly on the callback URL).
     if (hasAuthHash) {
       void supabase.auth.getSession().then(({ data: { session } }) => {
         if (session) void routeAfterSignIn(session);

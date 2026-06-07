@@ -8,7 +8,7 @@ if (typeof document !== "undefined" && !document.getElementById("dm-sans-font"))
 }
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Search,
   Plus,
@@ -31,10 +31,15 @@ import {
   AlignLeft,
   Sparkles,
   Save,
+  Loader2,
 } from "lucide-react";
 import { AppShell } from "./-AppShell";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/useAuth";
+import { requireAuth } from "@/lib/guards";
 
 export const Route = createFileRoute("/notes")({
+  beforeLoad: requireAuth,
   head: () => ({
     meta: [
       { title: "Notes: StudyAI" },
@@ -58,75 +63,9 @@ interface Note {
   course: string;
   pinned: boolean;
   starred: boolean;
-  updatedAt: string;
+  updatedAt: string;   // ISO string from DB, formatted for display
   wordCount: number;
 }
-
-/* ─── Mock data ──────────────────────────────────────────── */
-
-const MOCK_NOTES: Note[] = [
-  {
-    id: "1",
-    title: "Organic Chemistry: Reaction Mechanisms",
-    body: "Nucleophilic substitution reactions proceed via two main pathways:\n\n**SN1**: unimolecular, proceeds through a carbocation intermediate. Favoured by tertiary substrates and polar protic solvents.\n\n**SN2**: bimolecular, backside attack with inversion of configuration. Favoured by primary substrates and polar aprotic solvents.\n\nKey tip: steric hindrance is the deciding factor.",
-    color: "yellow",
-    tags: ["Chemistry", "Important"],
-    course: "Chemistry",
-    pinned: true,
-    starred: true,
-    updatedAt: "2 hours ago",
-    wordCount: 68,
-  },
-
-  {
-    id: "3",
-    title: "Cell Biology: Mitosis Stages",
-    body: "PMAT: Prophase, Metaphase, Anaphase, Telophase.\n\nProphase: chromatin condenses, spindle forms.\nMetaphase: chromosomes align at metaphase plate.\nAnaphase: sister chromatids pulled to opposite poles.\nTelophase: nuclear envelope reforms, cytokinesis follows.",
-    color: "coral",
-    tags: ["Biology"],
-    course: "Biology",
-    pinned: false,
-    starred: true,
-    updatedAt: "2 days ago",
-    wordCount: 44,
-  },
-  {
-    id: "4",
-    title: "Bonding Types: Quick Reference",
-    body: "Ionic: metal + non-metal, electrostatic attraction between oppositely charged ions.\nCovalent: non-metal + non-metal, shared electron pairs.\nMetallic: sea of delocalised electrons.\n\nPolarity: difference in electronegativity > 0.4 → polar covalent; > 1.7 → ionic.",
-    color: "sky",
-    tags: ["Chemistry", "General"],
-    course: "Chemistry",
-    pinned: false,
-    starred: false,
-    updatedAt: "3 days ago",
-    wordCount: 50,
-  },
-  {
-    id: "5",
-    title: "Supply & Demand: Key Shifts",
-    body: "Demand shifts right when: income rises (normal good), price of substitute rises, expectations of higher future price.\n\nSupply shifts right when: input costs fall, technology improves, number of sellers increases.\n\nEquilibrium: price adjusts until Qd = Qs.",
-    color: "lavender",
-    tags: ["Economics", "Important"],
-    course: "Economics",
-    pinned: false,
-    starred: false,
-    updatedAt: "4 days ago",
-    wordCount: 46,
-  },
-  {
-    id: "6",
-    title: "Essay Plan: Photosynthesis",
-    body: "Introduction: define photosynthesis, state overall equation.\nLight-dependent reactions: thylakoid membrane, ATP + NADPH produced, oxygen released.\nLight-independent (Calvin cycle): stroma, CO₂ fixed, G3P produced.\nConclusion: significance for all aerobic life.",
-    color: "white",
-    tags: ["Biology", "General"],
-    course: "Biology",
-    pinned: false,
-    starred: false,
-    updatedAt: "1 week ago",
-    wordCount: 48,
-  },
-];
 
 /* ─── Colour map ─────────────────────────────────────────── */
 
@@ -151,10 +90,37 @@ const TAG_STYLES: Record<NoteTag, string> = {
 const ALL_TAGS: NoteTag[] = ["Chemistry", "Biology", "Economics", "Math", "General", "Important"];
 const ALL_COLORS: NoteColor[] = ["yellow", "sage", "coral", "sky", "lavender", "white"];
 
+/* ─── Helpers ────────────────────────────────────────────── */
+
+function formatRelative(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1)   return "Just now";
+  if (mins < 60)  return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24)   return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7)   return `${days}d ago`;
+  const wks = Math.floor(days / 7);
+  if (wks < 5)    return `${wks}w ago`;
+  return new Date(iso).toLocaleDateString();
+}
+
+function isValidColor(v: string): v is NoteColor {
+  return ["yellow", "sage", "coral", "sky", "lavender", "white"].includes(v);
+}
+
+function isValidTag(v: string): v is NoteTag {
+  return ["Chemistry", "Biology", "Economics", "Math", "General", "Important"].includes(v);
+}
+
 /* ─── Page ───────────────────────────────────────────────── */
 
 export default function NotesPage() {
-  const [notes, setNotes]           = useState<Note[]>(MOCK_NOTES);
+  const { user } = useAuth();
+  const [notes, setNotes]           = useState<Note[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [saving, setSaving]         = useState(false);
   const [search, setSearch]         = useState("");
   const [activeTag, setActiveTag]   = useState<NoteTag | "All">("All");
   const [editing, setEditing]       = useState<Note | null>(null);
@@ -167,6 +133,41 @@ export default function NotesPage() {
   const [draftColor, setDraftColor] = useState<NoteColor>("yellow");
   const [draftTags, setDraftTags]   = useState<NoteTag[]>([]);
 
+  /* ── Load notes from Supabase on mount ───────────────────── */
+  useEffect(() => {
+    if (!user) return;
+
+    async function loadNotes() {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("notes")
+        .select("id, title, body, color, tags, course, pinned, starred, updated_at, word_count")
+        .eq("user_id", user!.id)
+        .order("updated_at", { ascending: false });
+
+      if (!error && data) {
+        setNotes(
+          data.map((r) => ({
+            id: r.id,
+            title: r.title ?? "Untitled Note",
+            body: r.body ?? "",
+            color: isValidColor(r.color) ? r.color : "yellow",
+            tags: Array.isArray(r.tags) ? r.tags.filter(isValidTag) : [],
+            course: r.course ?? "General",
+            pinned: r.pinned ?? false,
+            starred: r.starred ?? false,
+            updatedAt: r.updated_at,
+            wordCount: r.word_count ?? 0,
+          }))
+        );
+      }
+      setLoading(false);
+    }
+
+    void loadNotes();
+  }, [user]);
+
+  /* ── Filtered / sorted views ─────────────────────────────── */
   const filtered = notes.filter((n) => {
     const matchSearch = n.title.toLowerCase().includes(search.toLowerCase()) ||
       n.body.toLowerCase().includes(search.toLowerCase());
@@ -177,6 +178,7 @@ export default function NotesPage() {
   const pinned   = filtered.filter((n) => n.pinned);
   const unpinned = filtered.filter((n) => !n.pinned);
 
+  /* ── Editor helpers ──────────────────────────────────────── */
   function openNew() {
     setDraftTitle("");
     setDraftBody("");
@@ -201,11 +203,17 @@ export default function NotesPage() {
     setIsNew(false);
   }
 
-  function saveNote() {
+  /* ── Save (insert or update) ─────────────────────────────── */
+  async function saveNote() {
+    if (!user) return;
+    setSaving(true);
+
     const wc = draftBody.trim().split(/\s+/).filter(Boolean).length;
+    const now = new Date().toISOString();
+
     if (isNew) {
-      const newNote: Note = {
-        id: Date.now().toString(),
+      const payload = {
+        user_id: user.id,
         title: draftTitle || "Untitled Note",
         body: draftBody,
         color: draftColor,
@@ -213,37 +221,125 @@ export default function NotesPage() {
         course: draftTags[0] ?? "General",
         pinned: false,
         starred: false,
-        updatedAt: "Just now",
-        wordCount: wc,
+        word_count: wc,
+        updated_at: now,
+        created_at: now,
       };
-      setNotes((prev) => [newNote, ...prev]);
+
+      const { data, error } = await supabase
+        .from("notes")
+        .insert(payload)
+        .select("id")
+        .single();
+
+      if (!error && data) {
+        const newNote: Note = {
+          id: data.id,
+          title: payload.title,
+          body: payload.body,
+          color: payload.color,
+          tags: payload.tags,
+          course: payload.course,
+          pinned: payload.pinned,
+          starred: payload.starred,
+          updatedAt: now,
+          wordCount: wc,
+        };
+        setNotes((prev) => [newNote, ...prev]);
+      }
     } else if (editing) {
-      setNotes((prev) =>
-        prev.map((n) =>
-          n.id === editing.id
-            ? { ...n, title: draftTitle, body: draftBody, color: draftColor, tags: draftTags, updatedAt: "Just now", wordCount: wc }
-            : n
-        )
-      );
+      const updates = {
+        title: draftTitle || "Untitled Note",
+        body: draftBody,
+        color: draftColor,
+        tags: draftTags,
+        course: draftTags[0] ?? editing.course,
+        word_count: wc,
+        updated_at: now,
+      };
+
+      const { error } = await supabase
+        .from("notes")
+        .update(updates)
+        .eq("id", editing.id)
+        .eq("user_id", user.id);
+
+      if (!error) {
+        setNotes((prev) =>
+          prev.map((n) =>
+            n.id === editing.id
+              ? { ...n, ...updates, wordCount: wc, updatedAt: now }
+              : n
+          )
+        );
+      }
     }
+
+    setSaving(false);
     closeEditor();
   }
 
-  function togglePin(id: string) {
-    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, pinned: !n.pinned } : n)));
+  /* ── Toggle pin ──────────────────────────────────────────── */
+  async function togglePin(id: string) {
+    if (!user) return;
+    const note = notes.find((n) => n.id === id);
+    if (!note) return;
+    const pinned = !note.pinned;
+
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, pinned } : n)));
     setMenuId(null);
+
+    await supabase
+      .from("notes")
+      .update({ pinned, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .eq("user_id", user.id);
   }
 
-  function toggleStar(id: string) {
-    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, starred: !n.starred } : n)));
+  /* ── Toggle star ─────────────────────────────────────────── */
+  async function toggleStar(id: string) {
+    if (!user) return;
+    const note = notes.find((n) => n.id === id);
+    if (!note) return;
+    const starred = !note.starred;
+
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, starred } : n)));
+
+    await supabase
+      .from("notes")
+      .update({ starred })
+      .eq("id", id)
+      .eq("user_id", user.id);
   }
 
-  function deleteNote(id: string) {
+  /* ── Delete ──────────────────────────────────────────────── */
+  async function deleteNote(id: string) {
+    if (!user) return;
     setNotes((prev) => prev.filter((n) => n.id !== id));
     setMenuId(null);
+
+    await supabase
+      .from("notes")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
   }
 
   const editorOpen = isNew || editing !== null;
+
+  /* ── Loading skeleton ────────────────────────────────────── */
+  if (loading) {
+    return (
+      <AppShell>
+        <div className="flex h-full items-center justify-center bg-[#faf9f6]">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-7 w-7 animate-spin text-stone-400" />
+            <p className="text-sm text-stone-400 font-medium">Loading your notes…</p>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell>
@@ -255,7 +351,6 @@ export default function NotesPage() {
             <h2 className="text-xs font-bold uppercase tracking-widest text-stone-400">Notebooks</h2>
           </div>
 
-          {/* All notes */}
           <SidebarItem
             icon={<AlignLeft className="h-4 w-4" />}
             label="All Notes"
@@ -312,7 +407,6 @@ export default function NotesPage() {
               <p className="text-xs text-stone-400 mt-0.5">{notes.length} notes across all subjects</p>
             </div>
             <div className="ml-auto flex items-center gap-3">
-              {/* Search */}
               <div className="flex items-center gap-2 bg-white border border-stone-200 rounded-xl px-3 py-2 w-56 shadow-sm">
                 <Search className="h-3.5 w-3.5 text-stone-400 shrink-0" />
                 <input
@@ -350,7 +444,6 @@ export default function NotesPage() {
 
           {/* Notes grid */}
           <div className="flex-1 overflow-y-auto px-6 py-6">
-            {/* Stats */}
             <div className="flex items-center gap-6 mb-5 text-xs text-stone-400">
               <span><span className="font-bold text-stone-700">{filtered.length}</span> notes</span>
               <span><span className="font-bold text-stone-700">{pinned.length}</span> pinned</span>
@@ -418,7 +511,6 @@ export default function NotesPage() {
         {/* ── Editor panel ─────────────────────────────── */}
         {editorOpen && (
           <>
-            {/* Backdrop */}
             <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm" onClick={closeEditor} />
 
             <div className="fixed right-0 top-0 bottom-0 z-50 w-[480px] flex flex-col bg-white shadow-2xl border-l border-stone-200 overflow-hidden">
@@ -431,9 +523,13 @@ export default function NotesPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={saveNote}
-                    className="flex items-center gap-1.5 bg-stone-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-stone-700 transition"
+                    disabled={saving}
+                    className="flex items-center gap-1.5 bg-stone-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-stone-700 transition disabled:opacity-60"
                   >
-                    <Save className="h-3.5 w-3.5" /> Save
+                    {saving
+                      ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      : <Save className="h-3.5 w-3.5" />}
+                    {saving ? "Saving…" : "Save"}
                   </button>
                   <button onClick={closeEditor} className="h-7 w-7 rounded-lg flex items-center justify-center text-stone-400 hover:bg-stone-100 transition">
                     <X className="h-4 w-4" />
@@ -516,7 +612,10 @@ export default function NotesPage() {
 
                 <div className="flex items-center justify-between text-[11px] text-stone-400 pt-1">
                   <span>{draftBody.trim().split(/\s+/).filter(Boolean).length} words</span>
-                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Last edited just now</span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {editing ? `Last edited ${formatRelative(editing.updatedAt)}` : "New note"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -543,7 +642,6 @@ function NoteCard({
 }) {
   const colors = NOTE_COLORS[note.color];
 
-  /* Simple preview: strip markdown markers */
   const preview = note.body
     .replace(/\*\*(.*?)\*\*/g, "$1")
     .replace(/__(.*?)__/g, "$1")
@@ -557,7 +655,6 @@ function NoteCard({
       style={{ minHeight: 180 }}
       onClick={onEdit}
     >
-      {/* Top row */}
       <div className="flex items-start justify-between gap-2 mb-2">
         <h3 className="text-[13px] font-extrabold text-stone-800 leading-snug line-clamp-2 flex-1">{note.title}</h3>
         <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition" onClick={(e) => e.stopPropagation()}>
@@ -583,10 +680,8 @@ function NoteCard({
         </div>
       </div>
 
-      {/* Body preview */}
       <p className="text-[12px] text-stone-500 leading-relaxed line-clamp-4 flex-1 font-sans tracking-[-0.01em]">{preview}</p>
 
-      {/* Footer */}
       <div className="mt-3 flex items-end justify-between">
         <div className="flex flex-wrap gap-1">
           {note.tags.slice(0, 2).map((tag) => (
@@ -595,7 +690,7 @@ function NoteCard({
           {note.tags.length > 2 && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-400">+{note.tags.length - 2}</span>}
         </div>
         <span className="text-[10px] text-stone-400 shrink-0 ml-2 flex items-center gap-0.5">
-          <Clock className="h-2.5 w-2.5" />{note.updatedAt}
+          <Clock className="h-2.5 w-2.5" />{formatRelative(note.updatedAt)}
         </span>
       </div>
     </div>

@@ -54,7 +54,7 @@ type DocData = {
   imageMimeType?: string;
 };
 
-const API_KEY = "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";
+const API_KEY = "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";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const TEXT_MODEL = "openai/gpt-4o-mini";
 const VISION_MODEL = "openai/gpt-4o";
