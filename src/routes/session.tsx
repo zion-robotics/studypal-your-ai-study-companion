@@ -46,11 +46,16 @@ function Session() {
   }, []);
 
   async function loadLesson() {
+    setError(null);
+    setPhase("loading");
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setError("Not logged in"); return; }
+      if (!user) {
+        setError("Not logged in");
+        setPhase("lesson");
+        return;
+      }
 
-      // Get most recent lesson
       const { data, error: err } = await supabase
         .from("lessons")
         .select("*")
@@ -61,17 +66,17 @@ function Session() {
 
       if (err || !data) {
         setError("No lessons found. Upload your notes first.");
+        setPhase("lesson");
         return;
       }
 
       setLesson({ subject: data.subject, notes: data.notes, topics: data.topics });
       setLessonId(data.id);
       setCurrentTopic(data.topics?.[0] ?? data.subject);
-
-      // Generate questions with Groq
       await generateQuestionsFromLesson(data.subject, data.notes, data.topics?.[0]);
     } catch (e) {
       setError("Something went wrong loading your lesson.");
+      setPhase("lesson");
     }
   }
 
@@ -122,7 +127,6 @@ Return JSON: { "questions": [{ "q": "question text", "opts": ["A", "B", "C", "D"
     if (next.length >= questions.length) {
       setTimeout(async () => {
         setPhase("done");
-        // Save session result
         const { data: { user } } = await supabase.auth.getUser();
         if (user && lessonId) {
           const score = next.reduce((s, p, idx) => s + (p === questions[idx]?.a ? 1 : 0), 0);
@@ -166,12 +170,22 @@ Return JSON: { "questions": [{ "q": "question text", "opts": ["A", "B", "C", "D"
       <AppShell>
         <div className="flex h-full items-center justify-center p-8">
           <div className="text-center space-y-4 max-w-sm">
-            <p className="font-display text-xl">No lesson loaded</p>
+            <div className="mx-auto h-16 w-16 rounded-2xl bg-accent/10 flex items-center justify-center">
+              <Zap className="h-8 w-8 text-accent" />
+            </div>
+            <p className="font-display text-xl font-extrabold">No lesson loaded</p>
             <p className="text-sm text-muted-foreground">{error}</p>
-            <Link to="/upload"
-              className="inline-block rounded-xl bg-accent px-6 py-3 text-sm font-medium text-accent-foreground">
+            <Link
+              to="/upload"
+              className="inline-block rounded-xl bg-accent px-6 py-3 text-sm font-medium text-accent-foreground"
+            >
               Upload Your Notes →
             </Link>
+            <div className="pt-2">
+              <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-foreground transition">
+                ← Back to dashboard
+              </Link>
+            </div>
           </div>
         </div>
       </AppShell>
@@ -196,9 +210,11 @@ Return JSON: { "questions": [{ "q": "question text", "opts": ["A", "B", "C", "D"
               </div>
               <h1 className="text-3xl font-extrabold tracking-tight">{currentTopic}</h1>
             </div>
-            <Link to="/dashboard"
+            <Link
+              to="/dashboard"
               onClick={() => window.speechSynthesis?.cancel()}
-              className="rounded-xl border bg-card px-4 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition">
+              className="rounded-xl border bg-card px-4 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition"
+            >
               Exit
             </Link>
           </div>
@@ -224,18 +240,20 @@ Return JSON: { "questions": [{ "q": "question text", "opts": ["A", "B", "C", "D"
                   <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
                     Your notes · {currentTopic}
                   </div>
-                  <p className="text-base leading-relaxed text-foreground line-clamp-12">
+                  <p className="text-base leading-relaxed text-foreground">
                     {lesson?.notes?.slice(0, 800)}
                     {(lesson?.notes?.length ?? 0) > 800 && (
-                      <span className="text-muted-foreground">... (continued in voice)</span>
+                      <span className="text-muted-foreground"> ... (continued in voice)</span>
                     )}
                   </p>
                 </div>
 
                 {/* Voice controls */}
                 <div className="mt-4 rounded-2xl bg-muted/40 border p-5 flex items-center gap-4">
-                  <button onClick={togglePlay}
-                    className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center text-accent-foreground shadow-lg hover:opacity-90 transition shrink-0">
+                  <button
+                    onClick={togglePlay}
+                    className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center text-accent-foreground shadow-lg hover:opacity-90 transition shrink-0"
+                  >
                     {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
                   </button>
                   <div className="flex-1 min-w-0">
@@ -253,15 +271,18 @@ Return JSON: { "questions": [{ "q": "question text", "opts": ["A", "B", "C", "D"
                           animate={{ height: [h, h * 2.5, h] }}
                           transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.1 }}
                           className="w-1 rounded-full bg-accent"
-                          style={{ height: h }} />
+                          style={{ height: h }}
+                        />
                       ))}
                     </div>
                   )}
                 </div>
 
                 <div className="mt-3 flex justify-end">
-                  <button onClick={() => { window.speechSynthesis?.cancel(); setPhase("quiz"); }}
-                    className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground font-medium transition">
+                  <button
+                    onClick={() => { window.speechSynthesis?.cancel(); setPhase("quiz"); }}
+                    className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground font-medium transition"
+                  >
                     Ready for the quiz <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
@@ -279,8 +300,10 @@ Return JSON: { "questions": [{ "q": "question text", "opts": ["A", "B", "C", "D"
                     <span>{qi + 1} / {questions.length}</span>
                   </div>
                   <div className="h-1.5 w-full rounded-full bg-muted">
-                    <div className="h-1.5 rounded-full bg-accent transition-all duration-500"
-                      style={{ width: `${((qi + 1) / questions.length) * 100}%` }} />
+                    <div
+                      className="h-1.5 rounded-full bg-accent transition-all duration-500"
+                      style={{ width: `${((qi + 1) / questions.length) * 100}%` }}
+                    />
                   </div>
                 </div>
 
@@ -306,9 +329,11 @@ Return JSON: { "questions": [{ "q": "question text", "opts": ["A", "B", "C", "D"
                               : "border-border bg-background hover:border-accent"
                           }`}>
                           <span className={`h-7 w-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
-                            showResult && isCorrect ? "bg-green-500/20 text-green-700 dark:text-green-400"
-                            : showResult && picked && !isCorrect ? "bg-destructive/20 text-destructive"
-                            : "bg-muted text-muted-foreground"
+                            showResult && isCorrect
+                              ? "bg-green-500/20 text-green-700 dark:text-green-400"
+                              : showResult && picked && !isCorrect
+                              ? "bg-destructive/20 text-destructive"
+                              : "bg-muted text-muted-foreground"
                           }`}>
                             {String.fromCharCode(65 + i)}
                           </span>
@@ -334,7 +359,8 @@ Return JSON: { "questions": [{ "q": "question text", "opts": ["A", "B", "C", "D"
                       strokeWidth="10" strokeLinecap="round"
                       strokeDasharray={`${2 * Math.PI * 50}`}
                       strokeDashoffset={`${2 * Math.PI * 50 * (1 - pct / 100)}`}
-                      style={{ transform: "rotate(-90deg)", transformOrigin: "center", transition: "stroke-dashoffset 1s ease" }} />
+                      style={{ transform: "rotate(-90deg)", transformOrigin: "center", transition: "stroke-dashoffset 1s ease" }}
+                    />
                     <text x="60" y="55" textAnchor="middle" fontSize="24" fontWeight="800"
                       fill={pct >= 70 ? "oklch(0.65 0.16 145)" : "oklch(0.72 0.17 30)"}>
                       {pct}%
@@ -376,8 +402,10 @@ Return JSON: { "questions": [{ "q": "question text", "opts": ["A", "B", "C", "D"
                       className="rounded-xl border bg-background px-5 py-3 text-sm font-semibold hover:shadow-sm transition">
                       Dashboard
                     </Link>
-                    <button onClick={() => { setPicks([]); setQi(0); setPhase("lesson"); loadLesson(); }}
-                      className="rounded-xl bg-accent px-5 py-3 text-sm font-bold text-accent-foreground hover:opacity-95 transition">
+                    <button
+                      onClick={() => { setPicks([]); setQi(0); loadLesson(); }}
+                      className="rounded-xl bg-accent px-5 py-3 text-sm font-bold text-accent-foreground hover:opacity-95 transition"
+                    >
                       Next Lesson →
                     </button>
                   </div>
