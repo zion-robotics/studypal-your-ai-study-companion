@@ -4,8 +4,9 @@ import {
   Bell, Plus, Upload, FileText, Folder,
   ChevronRight, ChevronDown, FilePlus, Search,
   Sparkles, CheckCircle2, MoreVertical,
-  ClipboardList, FlipHorizontal, BookOpen, Mic,
-  GraduationCap, X, FolderOpen,
+  ClipboardList, BookOpen, Mic, X, FolderOpen,
+  Flame, Target, Calendar, Zap, Brain,
+  GraduationCap, TrendingUp,
 } from "lucide-react";
 import { AppShell } from "./-AppShell";
 import { useAuth, getFirstName, getDisplayName, getInitials } from "@/hooks/useAuth";
@@ -21,8 +22,8 @@ export const Route = createFileRoute("/dashboard")({
   beforeLoad: requireAuth,
   head: () => ({
     meta: [
-      { title: "Dashboard — StudyAI" },
-      { name: "description", content: "Your study hub." },
+      { title: "Dashboard — StudyPal" },
+      { name: "description", content: "Your daily study pulse." },
     ],
   }),
   component: DashboardPage,
@@ -49,6 +50,13 @@ interface CourseFolder {
   parent_id: string | null;
 }
 
+interface StudyProgress {
+  streak: number;
+  total_sessions: number;
+  syllabus_coverage_percent: number;
+  last_active: string | null;
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatBytes(bytes: number | null): string {
@@ -64,8 +72,42 @@ function getGreeting(): string {
   return "Good evening";
 }
 
+function getDaysRemaining(deadline: string | null): number {
+  if (!deadline) return 0;
+  const diff = new Date(deadline).getTime() - Date.now();
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+}
+
 const COURSE_IMAGES = [chemImg, econImg, bioImg, bioImg];
 const DOC_COLORS = ["bg-sage", "bg-leaf/20", "bg-coral/15", "bg-primary/10"];
+
+// ─── Daily Pulse Ring ─────────────────────────────────────────────────────────
+
+function PulseRing({ percent }: { percent: number }) {
+  const r = 54;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (percent / 100) * circ;
+  return (
+    <svg width="128" height="128" viewBox="0 0 128 128">
+      <circle cx="64" cy="64" r={r} fill="none" stroke="currentColor"
+        className="text-sage" strokeWidth="10" />
+      <circle cx="64" cy="64" r={r} fill="none"
+        stroke="oklch(0.72 0.17 30)" strokeWidth="10"
+        strokeLinecap="round" strokeDasharray={circ}
+        strokeDashoffset={offset}
+        style={{ transform: "rotate(-90deg)", transformOrigin: "center",
+          transition: "stroke-dashoffset 1s ease" }} />
+      <text x="64" y="60" textAnchor="middle"
+        className="fill-foreground font-extrabold" fontSize="22" fontWeight="800">
+        {percent}%
+      </text>
+      <text x="64" y="78" textAnchor="middle"
+        fontSize="10" fill="oklch(0.55 0.02 250)">
+        today
+      </text>
+    </svg>
+  );
+}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -73,30 +115,30 @@ function DashboardPage() {
   const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // All folders (for the "Select a course" dropdown)
-  const [allFolders, setAllFolders]   = useState<CourseFolder[]>([]);
-  // Top-3 root folders shown as cards
-  const [topCourses, setTopCourses]   = useState<CourseFolder[]>([]);
-  const [recentDocs, setRecentDocs]   = useState<RecentDoc[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [dataLoading, setDataLoading] = useState(true);
+  const [allFolders, setAllFolders]     = useState<CourseFolder[]>([]);
+  const [topCourses, setTopCourses]     = useState<CourseFolder[]>([]);
+  const [recentDocs, setRecentDocs]     = useState<RecentDoc[]>([]);
+  const [unreadCount, setUnreadCount]   = useState(0);
+  const [dataLoading, setDataLoading]   = useState(true);
+  const [progress, setProgress]         = useState<StudyProgress>({
+    streak: 0, total_sessions: 0,
+    syllabus_coverage_percent: 0, last_active: null,
+  });
 
-  // Search
-  const [searchQuery, setSearchQuery]       = useState("");
-  const [searchResults, setSearchResults]   = useState<{ docs: RecentDoc[]; folders: CourseFolder[] } | null>(null);
-  const [searchFocused, setSearchFocused]   = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
+  const [searchQuery, setSearchQuery]     = useState("");
+  const [searchResults, setSearchResults] = useState<{ docs: RecentDoc[]; folders: CourseFolder[] } | null>(null);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchRef  = useRef<HTMLDivElement>(null);
 
-  // Course selector in left panel
   const [courseOpen, setCourseOpen]         = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<CourseFolder | null>(null);
   const courseDropRef = useRef<HTMLDivElement>(null);
 
-  const firstName    = getFirstName(profile, user);
-  const displayName  = getDisplayName(profile, user);
-  const initials     = getInitials(profile, user);
-  const avatarUrl    = profile?.avatar_url ?? null;
-  const university   = profile?.university ?? null;
+  const firstName     = getFirstName(profile, user);
+  const displayName   = getDisplayName(profile, user);
+  const initials      = getInitials(profile, user);
+  const avatarUrl     = profile?.avatar_url ?? null;
+  const university    = profile?.university ?? null;
   const courseOfStudy = profile?.course_of_study ?? null;
 
   // ── Data load ───────────────────────────────────────────────────────────────
@@ -108,7 +150,10 @@ function DashboardPage() {
   async function fetchDashboardData() {
     setDataLoading(true);
     try {
-      await Promise.all([fetchCourses(), fetchRecentDocs(), fetchNotifications()]);
+      await Promise.all([
+        fetchCourses(), fetchRecentDocs(),
+        fetchNotifications(), fetchProgress(),
+      ]);
     } finally {
       setDataLoading(false);
     }
@@ -123,7 +168,6 @@ function DashboardPage() {
 
     if (error || !data || data.length === 0) return;
 
-    // Count docs per folder
     const { data: docRows } = await supabase
       .from("documents")
       .select("folder_id")
@@ -135,8 +179,7 @@ function DashboardPage() {
     }
 
     const folders: CourseFolder[] = data.map((c: any, i: number) => ({
-      id: c.id,
-      title: c.title,
+      id: c.id, title: c.title,
       teacher: c.teacher_name ?? null,
       doc_count: countMap[c.id] ?? 0,
       img: COURSE_IMAGES[i % COURSE_IMAGES.length],
@@ -144,7 +187,6 @@ function DashboardPage() {
     }));
 
     setAllFolders(folders);
-    // Only root folders as course cards (no parent), max 3
     setTopCourses(folders.filter((f) => !f.parent_id).slice(0, 3));
   }
 
@@ -158,13 +200,11 @@ function DashboardPage() {
 
     if (error || !data || data.length === 0) return;
 
-    setRecentDocs(
-      data.map((d: any, i: number) => ({
-        ...d,
-        status: d.status === "assessed" ? "Assessed" : "Pending",
-        color: DOC_COLORS[i % DOC_COLORS.length],
-      }))
-    );
+    setRecentDocs(data.map((d: any, i: number) => ({
+      ...d,
+      status: d.status === "assessed" ? "Assessed" : "Pending",
+      color: DOC_COLORS[i % DOC_COLORS.length],
+    })));
   }
 
   async function fetchNotifications() {
@@ -173,8 +213,17 @@ function DashboardPage() {
       .select("id", { count: "exact", head: true })
       .eq("user_id", user!.id)
       .eq("read", false);
-
     setUnreadCount(count ?? 0);
+  }
+
+  async function fetchProgress() {
+    const { data } = await supabase
+      .from("progress")
+      .select("streak, total_sessions, syllabus_coverage_percent, last_active")
+      .eq("user_id", user!.id)
+      .maybeSingle();
+
+    if (data) setProgress(data);
   }
 
   // ── Search ──────────────────────────────────────────────────────────────────
@@ -187,55 +236,49 @@ function DashboardPage() {
     });
   }, [searchQuery, recentDocs, allFolders]);
 
-  // Close search dropdown on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node))
         setSearchFocused(false);
-      }
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Close course dropdown on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
-      if (courseDropRef.current && !courseDropRef.current.contains(e.target as Node)) {
+      if (courseDropRef.current && !courseDropRef.current.contains(e.target as Node))
         setCourseOpen(false);
-      }
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const showSearchDrop = searchFocused && (searchQuery.trim() !== "" || true) && searchResults !== null;
-  const hasNoFolders = !dataLoading && allFolders.length === 0;
+  const showSearchDrop = searchFocused && searchResults !== null;
+  const hasNoFolders   = !dataLoading && allFolders.length === 0;
+  const todayPct       = Math.min(100, progress.syllabus_coverage_percent);
 
   return (
     <AppShell>
       <div className="flex h-full overflow-hidden">
 
-        {/* ── Left column — Quick Upload ────────────────────────────── */}
+        {/* ── Left — Upload Panel ───────────────────────────────────── */}
         <section className="w-[280px] shrink-0 bg-sage-light p-6 flex flex-col h-full overflow-y-auto">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold">Quick Upload</h2>
-            {/* FilePlus → goes straight to Courses upload */}
-            <Link to="/courses" title="Upload a document in Courses">
+            <h2 className="text-lg font-bold">Upload Notes</h2>
+            <Link to="/courses" title="Go to courses">
               <button className="rounded-md p-2 hover:bg-white/50 transition">
                 <FilePlus className="h-4 w-4" />
               </button>
             </Link>
           </div>
 
-          {/* User identity card */}
+          {/* User card */}
           <div className="mt-5 rounded-2xl bg-white border px-4 py-3 flex items-center gap-3">
             <div className="h-10 w-10 rounded-full overflow-hidden bg-coral/80 flex items-center justify-center text-white text-sm font-bold shrink-0 ring-2 ring-coral/20">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
-              ) : (
-                <span>{initials}</span>
-              )}
+              {avatarUrl
+                ? <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
+                : <span>{initials}</span>}
             </div>
             <div className="min-w-0">
               <p className="font-extrabold text-sm truncate">{displayName}</p>
@@ -252,9 +295,9 @@ function DashboardPage() {
           </div>
 
           <div className="text-center">
-            <h4 className="text-xl font-extrabold">Upload Files or<br />Documents</h4>
+            <h4 className="text-xl font-extrabold">Drop Your Lecture<br />Notes Here</h4>
             <p className="text-xs text-muted-foreground mt-2 mb-4">
-              Drop files into a course folder:
+              StudyPal structures them into lessons automatically
             </p>
 
             {/* Course selector */}
@@ -264,7 +307,7 @@ function DashboardPage() {
                 className="w-full rounded-xl border bg-white px-3 py-2 flex items-center justify-between text-sm font-medium cursor-pointer hover:bg-white/80 transition"
               >
                 <span className={selectedCourse ? "text-foreground" : "text-muted-foreground"}>
-                  {selectedCourse ? selectedCourse.title : (hasNoFolders ? "No folders yet" : "Select a course…")}
+                  {selectedCourse ? selectedCourse.title : (hasNoFolders ? "No subjects yet" : "Select a subject…")}
                 </span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
               </button>
@@ -273,7 +316,7 @@ function DashboardPage() {
                 <div className="absolute top-full left-0 right-0 mt-1 z-30 rounded-xl border bg-white shadow-lg py-1 max-h-48 overflow-y-auto">
                   {hasNoFolders ? (
                     <Link to="/courses" className="block px-4 py-2.5 text-sm text-coral font-semibold hover:bg-sage-light transition">
-                      + Create your first folder
+                      + Add your first subject
                     </Link>
                   ) : (
                     allFolders.map((f) => (
@@ -286,7 +329,6 @@ function DashboardPage() {
                       >
                         <Folder className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                         <span className="truncate">{f.title}</span>
-                        {f.parent_id && <span className="text-[10px] text-muted-foreground ml-auto shrink-0">sub</span>}
                       </button>
                     ))
                   )}
@@ -294,10 +336,9 @@ function DashboardPage() {
               )}
             </div>
 
-            {/* Upload button → Courses page (with selected folder context if possible) */}
             <Link to="/courses">
               <button className="w-full rounded-xl bg-gradient-to-b from-coral to-primary py-3.5 text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-coral/30 hover:opacity-95 transition">
-                <Upload className="h-4 w-4" /> Upload Document
+                <Upload className="h-4 w-4" /> Upload & Structure
               </button>
             </Link>
           </div>
@@ -310,7 +351,7 @@ function DashboardPage() {
               <p className="text-sm font-semibold text-coral">
                 {getGreeting()}, {firstName} 👋
               </p>
-              <h1 className="text-4xl font-extrabold tracking-tight mt-0.5">My Study Hub</h1>
+              <h1 className="text-4xl font-extrabold tracking-tight mt-0.5">Daily Pulse</h1>
               {(courseOfStudy || university) && (
                 <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
                   <GraduationCap className="h-4 w-4" />
@@ -319,11 +360,10 @@ function DashboardPage() {
               )}
               {!courseOfStudy && !university && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  Organise your courses, upload documents, and study smarter
+                  Your AI-powered study companion — built for African students
                 </p>
               )}
             </div>
-
             <button className="relative rounded-full bg-white shadow-sm p-3 border">
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
@@ -334,20 +374,51 @@ function DashboardPage() {
             </button>
           </header>
 
+          {/* ── Daily Pulse Card ────────────────────────────────────── */}
+          <div className="mt-6 rounded-2xl bg-white border p-6 flex items-center gap-8 shadow-sm">
+            <PulseRing percent={todayPct} />
+            <div className="flex-1 grid grid-cols-3 gap-4">
+              <StatPill
+                icon={<Flame className="h-4 w-4" />}
+                label="Day streak"
+                value={dataLoading ? "—" : `${progress.streak}`}
+                color="text-coral"
+              />
+              <StatPill
+                icon={<CheckCircle2 className="h-4 w-4" />}
+                label="Sessions done"
+                value={dataLoading ? "—" : `${progress.total_sessions}`}
+                color="text-leaf"
+              />
+              <StatPill
+                icon={<TrendingUp className="h-4 w-4" />}
+                label="Syllabus covered"
+                value={dataLoading ? "—" : `${progress.syllabus_coverage_percent}%`}
+                color="text-primary"
+              />
+            </div>
+            <Link to="/session">
+              <button className="rounded-xl bg-gradient-to-b from-coral to-primary px-5 py-3 text-white font-bold text-sm shadow-lg shadow-coral/30 hover:opacity-95 transition whitespace-nowrap flex items-center gap-2">
+                <Zap className="h-4 w-4" /> Start Session
+              </button>
+            </Link>
+          </div>
+
           {/* ── Search ─────────────────────────────────────────────── */}
-          <div ref={searchRef} className="mt-6 relative">
+          <div ref={searchRef} className="mt-5 relative">
             <div className="flex items-center justify-between rounded-2xl bg-white border px-5 py-4 shadow-sm">
               <div className="flex items-center gap-3 text-sm font-medium flex-1">
                 <Search className="h-4 w-4 text-muted-foreground shrink-0" />
                 <input
                   className="flex-1 outline-none text-sm placeholder:text-muted-foreground bg-transparent"
-                  placeholder="Search documents, folders…"
+                  placeholder="Search notes, subjects, lessons…"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setSearchFocused(true)}
                 />
                 {searchQuery && (
-                  <button onClick={() => { setSearchQuery(""); setSearchResults(null); }} className="text-muted-foreground hover:text-foreground">
+                  <button onClick={() => { setSearchQuery(""); setSearchResults(null); }}
+                    className="text-muted-foreground hover:text-foreground">
                     <X className="h-4 w-4" />
                   </button>
                 )}
@@ -358,12 +429,11 @@ function DashboardPage() {
               </div>
             </div>
 
-            {/* Search results dropdown */}
             {showSearchDrop && (searchResults!.docs.length > 0 || searchResults!.folders.length > 0) && (
               <div className="absolute top-full left-0 right-0 mt-2 z-40 rounded-2xl bg-white border shadow-xl overflow-hidden max-h-80 overflow-y-auto">
                 {searchResults!.folders.length > 0 && (
                   <div>
-                    <p className="px-4 pt-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Folders</p>
+                    <p className="px-4 pt-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Subjects</p>
                     {searchResults!.folders.map((f) => (
                       <Link key={f.id} to="/courses" onClick={() => { setSearchFocused(false); setSearchQuery(""); }}>
                         <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-sage-light transition cursor-pointer">
@@ -377,17 +447,11 @@ function DashboardPage() {
                 )}
                 {searchResults!.docs.length > 0 && (
                   <div>
-                    <p className="px-4 pt-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Documents</p>
+                    <p className="px-4 pt-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Notes & Materials</p>
                     {searchResults!.docs.map((d) => (
-                      <div
-                        key={d.id}
+                      <div key={d.id}
                         className="flex items-center gap-3 px-4 py-2.5 hover:bg-sage-light transition cursor-pointer"
-                        onClick={() => {
-                          if (d.public_url) window.open(d.public_url, "_blank", "noopener,noreferrer");
-                          setSearchFocused(false);
-                          setSearchQuery("");
-                        }}
-                      >
+                        onClick={() => { if (d.public_url) window.open(d.public_url, "_blank", "noopener,noreferrer"); setSearchFocused(false); setSearchQuery(""); }}>
                         <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold truncate">{d.name}</p>
@@ -400,22 +464,18 @@ function DashboardPage() {
               </div>
             )}
 
-            {/* No results */}
             {showSearchDrop && searchResults!.docs.length === 0 && searchResults!.folders.length === 0 && (
               <div className="absolute top-full left-0 right-0 mt-2 z-40 rounded-2xl bg-white border shadow-xl px-6 py-6 text-center text-sm text-muted-foreground">
-                No documents or folders matched "{searchQuery}"
+                No notes or subjects matched "{searchQuery}"
               </div>
             )}
           </div>
 
-          {/* ── Course folders ──────────────────────────────────────── */}
-          <div className="mt-6 grid grid-cols-[80px_repeat(3,1fr)] gap-4">
-            {/* New Folder — goes to Courses page */}
-            <Link to="/courses" title="Create a new folder in Courses">
+          {/* ── Subjects ───────────────────────────────────────────── */}
+          <div className="mt-5 grid grid-cols-[80px_repeat(3,1fr)] gap-4">
+            <Link to="/courses" title="Add a new subject">
               <button className="rounded-2xl border-2 border-dashed border-border bg-white/50 flex flex-col items-center justify-center gap-3 py-6 hover:border-coral transition w-full h-full">
-                <span className="[writing-mode:vertical-rl] rotate-180 text-sm font-semibold text-muted-foreground">
-                  New Folder
-                </span>
+                <span className="[writing-mode:vertical-rl] rotate-180 text-sm font-semibold text-muted-foreground">New Subject</span>
                 <div className="h-7 w-7 rounded-md bg-coral/10 text-coral flex items-center justify-center">
                   <Plus className="h-4 w-4" />
                 </div>
@@ -433,22 +493,16 @@ function DashboardPage() {
               : topCourses.length > 0
               ? topCourses.map((c) => (
                   <Link key={c.id} to="/courses">
-                    <CourseFolderCard
-                      img={c.img}
-                      title={c.title}
-                      docCount={c.doc_count}
-                      teacher={c.teacher ?? ""}
-                    />
+                    <CourseFolderCard img={c.img} title={c.title} docCount={c.doc_count} teacher={c.teacher ?? ""} />
                   </Link>
                 ))
               : (
-                // Empty state — prompt to create first folder
                 <div className="col-span-3 rounded-2xl border-2 border-dashed border-border bg-white/40 flex flex-col items-center justify-center py-10 gap-3">
                   <FolderOpen className="h-8 w-8 text-muted-foreground/40" />
-                  <p className="text-sm font-semibold text-muted-foreground">No course folders yet</p>
+                  <p className="text-sm font-semibold text-muted-foreground">No subjects added yet</p>
                   <Link to="/courses">
                     <button className="text-xs font-bold text-coral hover:underline flex items-center gap-1">
-                      <Plus className="h-3 w-3" /> Create your first folder
+                      <Plus className="h-3 w-3" /> Add your first subject
                     </button>
                   </Link>
                 </div>
@@ -456,9 +510,9 @@ function DashboardPage() {
             }
           </div>
 
-          {/* ── Recent Documents ────────────────────────────────────── */}
+          {/* ── Recent Materials ────────────────────────────────────── */}
           <section className="mt-8">
-            <h2 className="text-2xl font-extrabold">Recent Documents</h2>
+            <h2 className="text-2xl font-extrabold">Recent Materials</h2>
             <div className="mt-4 rounded-2xl bg-white border divide-y">
               {dataLoading
                 ? Array.from({ length: 3 }).map((_, i) => (
@@ -473,22 +527,18 @@ function DashboardPage() {
                 : recentDocs.length > 0
                 ? recentDocs.map((doc) => (
                     <DocumentRow
-                      key={doc.id}
-                      color={doc.color}
-                      title={doc.name}
-                      course={doc.course_name ?? "—"}
-                      size={formatBytes(doc.file_size)}
-                      status={doc.status}
-                      url={doc.public_url ?? undefined}
+                      key={doc.id} color={doc.color} title={doc.name}
+                      course={doc.course_name ?? "—"} size={formatBytes(doc.file_size)}
+                      status={doc.status} url={doc.public_url ?? undefined}
                     />
                   ))
                 : (
                   <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
                     <FileText className="h-8 w-8 text-muted-foreground/30" />
-                    <p className="text-sm font-semibold text-muted-foreground">No documents uploaded yet</p>
+                    <p className="text-sm font-semibold text-muted-foreground">No materials uploaded yet</p>
                     <Link to="/courses">
                       <button className="text-xs font-bold text-coral hover:underline flex items-center gap-1">
-                        <Upload className="h-3 w-3" /> Upload your first document
+                        <Upload className="h-3 w-3" /> Upload your first notes
                       </button>
                     </Link>
                   </div>
@@ -498,12 +548,12 @@ function DashboardPage() {
           </section>
         </main>
 
-        {/* ── Right column — AI Tools ───────────────────────────────── */}
+        {/* ── Right — AI Study Tools ────────────────────────────────── */}
         <aside className="w-[320px] shrink-0 bg-sage-light/40 flex flex-col h-full overflow-y-auto">
           <div className="h-[220px] shrink-0 relative overflow-hidden">
             <img src={cityImg} alt="" className="w-full h-full object-cover" loading="lazy" />
             <div className="absolute bottom-4 left-4 bg-sidebar-dark/80 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-lg">
-              AI Study Assistant
+              StudyPal AI
             </div>
             {displayName && (
               <div className="absolute top-3 right-3 bg-white/90 backdrop-blur text-sidebar-dark text-[10px] font-bold px-2.5 py-1 rounded-full">
@@ -514,53 +564,53 @@ function DashboardPage() {
 
           <div className="flex-1 p-6 flex flex-col">
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-extrabold">AI Tools</h3>
-              <Link to="/ai-tools">
+              <h3 className="text-xl font-extrabold">Study Tools</h3>
+              <Link to="/session">
                 <button className="flex items-center gap-1 rounded-lg border bg-white px-3 py-1.5 text-xs font-semibold hover:bg-sage-light transition">
-                  All <ChevronDown className="h-3 w-3" />
+                  Start <ChevronRight className="h-3 w-3" />
                 </button>
               </Link>
             </div>
 
             <div className="mt-4 flex-1 grid grid-cols-2 gap-3">
-              <Link to="/ai-tools">
-                <AiToolCard
-                  icon={<ClipboardList className="h-5 w-5" />}
-                  label="Quiz Me"
-                  color="bg-coral/10 text-coral"
-                />
+              <Link to="/session">
+                <AiToolCard icon={<Mic className="h-5 w-5" />} label="Voice Study" color="bg-coral/10 text-coral" />
               </Link>
-              <Link to="/ai-tools">
-                <AiToolCard
-                  icon={<FlipHorizontal className="h-5 w-5" />}
-                  label="Flashcards"
-                  color="bg-leaf/20 text-leaf"
-                />
+              <Link to="/session">
+                <AiToolCard icon={<ClipboardList className="h-5 w-5" />} label="Quiz Me" color="bg-leaf/20 text-leaf" />
               </Link>
-              <Link to="/ai-tools">
-                <AiToolCard
-                  icon={<BookOpen className="h-5 w-5" />}
-                  label="Summarise"
-                  color="bg-sage text-secondary-foreground"
-                />
+              <Link to="/courses">
+                <AiToolCard icon={<BookOpen className="h-5 w-5" />} label="My Lessons" color="bg-sage text-secondary-foreground" />
               </Link>
-              <Link to="/ai-tools">
-                <AiToolCard
-                  icon={<Mic className="h-5 w-5" />}
-                  label="Voice Notes"
-                  color="bg-primary/10 text-primary"
-                />
+              <Link to="/session">
+                <AiToolCard icon={<Brain className="h-5 w-5" />} label="AI Explain" color="bg-primary/10 text-primary" />
               </Link>
             </div>
 
-            {/* Active courses counter → links to Courses page */}
-            <Link to="/courses" className="mt-4">
+            {/* Life Happened Mode */}
+            <div className="mt-4 rounded-2xl border bg-white p-4 flex items-start gap-3">
+              <div className="h-8 w-8 rounded-xl bg-coral/10 text-coral flex items-center justify-center shrink-0">
+                <Calendar className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs font-extrabold">Life Happened?</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">
+                  Missed study days? StudyPal recalibrates your plan — no guilt, no broken streaks.
+                </p>
+                <button className="mt-2 text-[10px] font-bold text-coral hover:underline">
+                  Recalibrate my plan →
+                </button>
+              </div>
+            </div>
+
+            {/* Active subjects counter */}
+            <Link to="/courses" className="mt-3">
               <div className="rounded-2xl bg-gradient-to-r from-coral to-primary p-4 flex items-center gap-3 text-white hover:opacity-95 transition cursor-pointer">
                 <div className="text-2xl font-extrabold">
                   {dataLoading ? "—" : topCourses.length}
                 </div>
                 <div className="text-xs flex-1 leading-tight">
-                  Active course folders<br />with AI-ready documents
+                  Active subjects<br />with AI-ready notes
                 </div>
                 <div className="h-9 w-9 rounded-full bg-white/25 backdrop-blur flex items-center justify-center">
                   <ChevronRight className="h-4 w-4" />
@@ -570,7 +620,7 @@ function DashboardPage() {
 
             {user?.email && (
               <p className="mt-3 text-[10px] text-muted-foreground text-center truncate px-2">
-                Signed in as {user.email}
+                {user.email}
               </p>
             )}
           </div>
@@ -582,9 +632,20 @@ function DashboardPage() {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function CourseFolderCard({
-  img, title, docCount, teacher,
-}: {
+function StatPill({ icon, label, value, color }: {
+  icon: React.ReactNode; label: string; value: string; color: string;
+}) {
+  return (
+    <div className="rounded-xl border bg-sage-light/40 px-4 py-3 flex flex-col gap-1">
+      <div className={`flex items-center gap-1.5 text-xs font-bold ${color}`}>
+        {icon}{label}
+      </div>
+      <p className="text-2xl font-extrabold">{value}</p>
+    </div>
+  );
+}
+
+function CourseFolderCard({ img, title, docCount, teacher }: {
   img: string; title: string; docCount: number; teacher: string;
 }) {
   return (
@@ -595,16 +656,15 @@ function CourseFolderCard({
       <h3 className="font-extrabold">{title}</h3>
       {teacher && <p className="text-xs text-muted-foreground mt-0.5">{teacher}</p>}
       <div className="mt-2 flex items-center gap-1 text-[10px] font-semibold text-coral">
-        <Folder className="h-3 w-3" />{docCount} document{docCount !== 1 ? "s" : ""}
+        <Folder className="h-3 w-3" />{docCount} material{docCount !== 1 ? "s" : ""}
       </div>
     </div>
   );
 }
 
-function DocumentRow({
-  color, title, course, size, status, url,
-}: {
-  color: string; title: string; course: string; size: string; status: "Assessed" | "Pending"; url?: string;
+function DocumentRow({ color, title, course, size, status, url }: {
+  color: string; title: string; course: string; size: string;
+  status: "Assessed" | "Pending"; url?: string;
 }) {
   return (
     <div
@@ -624,17 +684,14 @@ function DocumentRow({
       <div className="flex items-center gap-2 shrink-0">
         {status === "Assessed" ? (
           <span className="rounded-lg bg-leaf/20 px-3 py-1.5 text-xs font-bold text-leaf flex items-center gap-1">
-            <CheckCircle2 className="h-3 w-3" /> Assessed
+            <CheckCircle2 className="h-3 w-3" /> Structured
           </span>
         ) : (
           <span className="rounded-lg bg-sage px-3 py-1.5 text-xs font-bold text-secondary-foreground">
             Pending
           </span>
         )}
-        <button
-          className="text-muted-foreground hover:text-foreground"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <button className="text-muted-foreground hover:text-foreground" onClick={(e) => e.stopPropagation()}>
           <MoreVertical className="h-4 w-4" />
         </button>
       </div>
@@ -642,9 +699,7 @@ function DocumentRow({
   );
 }
 
-function AiToolCard({
-  icon, label, color,
-}: {
+function AiToolCard({ icon, label, color }: {
   icon: React.ReactNode; label: string; color: string;
 }) {
   return (
