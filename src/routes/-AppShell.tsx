@@ -1,4 +1,3 @@
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   FolderOpen,
@@ -8,11 +7,14 @@ import {
   Settings,
   LogOut,
   Zap,
+  BookOpen,
+  Users,
 } from "lucide-react";
-import { useAuth, getInitials } from "@/hooks/useAuth";
 
 const NAV = [
   { to: "/dashboard", icon: <LayoutDashboard className="h-5 w-5" />, label: "Dashboard" },
+  { to: "/session",   icon: <BookOpen className="h-5 w-5" />,        label: "Study" },
+  { to: "/community", icon: <Users className="h-5 w-5" />,           label: "Community" },
   { to: "/courses",   icon: <FolderOpen className="h-5 w-5" />,      label: "Courses" },
   { to: "/ai-tools",  icon: <Brain className="h-5 w-5" />,           label: "AI Tools" },
   { to: "/documents", icon: <FileText className="h-5 w-5" />,        label: "Documents" },
