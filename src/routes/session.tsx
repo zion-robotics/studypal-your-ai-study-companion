@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { AppShell } from "@/components/sp/AppShell";
+import { AppShell } from "./-AppShell";
 import { speak, stopSpeaking } from "@/lib/speech";
 import { useProfile } from "@/hooks/useProfile";
 import { requireAuth } from "@/lib/guards";
