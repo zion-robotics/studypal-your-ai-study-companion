@@ -1,3 +1,4 @@
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   FolderOpen,
@@ -10,6 +11,7 @@ import {
   BookOpen,
   Users,
 } from "lucide-react";
+import { useAuth, getInitials } from "@/hooks/useAuth";
 
 const NAV = [
   { to: "/dashboard", icon: <LayoutDashboard className="h-5 w-5" />, label: "Dashboard" },
@@ -23,7 +25,7 @@ const NAV = [
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { pathname } = useLocation();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
   const initials  = getInitials(profile, user);
