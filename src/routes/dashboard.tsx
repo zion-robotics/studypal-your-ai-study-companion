@@ -307,8 +307,8 @@ function DashboardPage() {
         <main className="flex-1 px-4 py-5 md:p-8 overflow-y-auto h-full">
           <header className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-semibold text-coral">{getGreeting()}, {firstName} 👋</p>
-              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight mt-0.5">Daily Pulse</h1>
+              <p className="text-sm font-semibold text-coral">{getGreeting()}, {firstName}</p>
+              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight mt-0.5">StudyPal</h1>
               {(courseOfStudy || university) ? (
                 <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
                   <GraduationCap className="h-4 w-4" />
@@ -316,7 +316,7 @@ function DashboardPage() {
                 </p>
               ) : (
                 <p className="text-sm text-muted-foreground mt-1">
-                  Your AI-powered study companion — built for African students
+                  Your AI-powered study companion. Built for African students
                 </p>
               )}
             </div>
@@ -330,74 +330,7 @@ function DashboardPage() {
             </button>
           </header>
 
-          {/* ── Daily Pulse Card ── */}
-          <div className="mt-6 rounded-2xl bg-white border shadow-sm overflow-hidden">
-
-            {/* Top row */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 px-5 md:px-8 py-5 md:py-6 border-b">
-              <PulseRing percent={todayPct} />
-              <div className="flex-1">
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  Today's Progress
-                </p>
-                <h2 className="text-2xl font-extrabold mt-1">
-                  {todayPct === 0
-                    ? "Ready to start studying?"
-                    : todayPct < 50
-                    ? "Good start — keep going!"
-                    : "You're crushing it today 🔥"}
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {todayPct === 0
-                    ? "Start a session and your progress will appear here."
-                    : `${todayPct}% of today's plan completed.`}
-                </p>
-              </div>
-              <Link to="/session">
-                <button className="rounded-xl bg-gradient-to-b from-coral to-primary px-6 py-3.5 text-white font-bold text-sm shadow-lg shadow-coral/30 hover:opacity-95 transition flex items-center gap-2 w-full sm:w-auto justify-center">
-                  <Zap className="h-4 w-4" /> Start Session
-                </button>
-              </Link>
-            </div>
-
-            {/* Stats row */}
-            <div className="grid grid-cols-3 divide-x">
-              <div className="flex flex-col items-center justify-center py-6 gap-1.5">
-                <div className="flex items-center gap-1.5 text-coral">
-                  <Flame className="h-4 w-4" />
-                  <span className="text-xs font-bold uppercase tracking-wide">Day Streak</span>
-                </div>
-                <p className="text-2xl md:text-3xl font-extrabold">
-                  {dataLoading ? "—" : progress.streak}
-                </p>
-                <p className="text-[11px] text-muted-foreground">
-                  {progress.streak === 1 ? "day in a row" : "days in a row"}
-                </p>
-              </div>
-
-              <div className="flex flex-col items-center justify-center py-6 gap-1.5">
-                <div className="flex items-center gap-1.5 text-leaf">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span className="text-xs font-bold uppercase tracking-wide">Sessions Done</span>
-                </div>
-                <p className="text-3xl font-extrabold">
-                  {dataLoading ? "—" : progress.total_sessions}
-                </p>
-                <p className="text-[11px] text-muted-foreground">total sessions</p>
-              </div>
-
-              <div className="flex flex-col items-center justify-center py-6 gap-1.5">
-                <div className="flex items-center gap-1.5 text-primary">
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="text-xs font-bold uppercase tracking-wide">Syllabus Covered</span>
-                </div>
-                <p className="text-3xl font-extrabold">
-                  {dataLoading ? "—" : `${progress.syllabus_coverage_percent}%`}
-                </p>
-                <p className="text-[11px] text-muted-foreground">of your material</p>
-              </div>
-            </div>
-          </div>
+      
 
           {/* ── Search ── */}
           <div ref={searchRef} className="mt-5 relative">
