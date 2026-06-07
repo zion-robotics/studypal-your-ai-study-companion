@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { AppShell } from "@/components/sp/AppShell";
 import { groqStructured } from "@/lib/groq";
+import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
 import { requireAuth } from "@/lib/guards";
 
@@ -46,7 +47,21 @@ function Upload() {
             : "Return { topics: string[] } — exam-focused revision topics, each likely to appear in JAMB or WAEC",
         },
       });
-      setTopics(Array.isArray((r as any).topics) ? (r as any).topics : fallback);
+      const finalTopics = Array.isArray((r as any).topics) ? (r as any).topics : fallback;
+      setTopics(finalTopics);
+
+      // ── Save to Supabase ──
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("lessons").insert({
+          user_id: user.id,
+          subject,
+          notes: notes.slice(0, 8000),
+          topics: finalTopics,
+          exam_type: isTertiary ? null : selectedExam,
+          created_at: new Date().toISOString(),
+        });
+      }
     } catch {
       setTopics(fallback);
     }
