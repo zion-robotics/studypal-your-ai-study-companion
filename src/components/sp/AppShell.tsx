@@ -8,17 +8,15 @@ import {
   Settings,
   LogOut,
   Zap,
-  BookOpen,
   Users,
 } from "lucide-react";
 import { useAuth, getInitials } from "@/hooks/useAuth";
 
 const NAV = [
   { to: "/dashboard", icon: <LayoutDashboard className="h-5 w-5" />, label: "Dashboard" },
-  { to: "/session",   icon: <BookOpen className="h-5 w-5" />,        label: "Study" },
   { to: "/community", icon: <Users className="h-5 w-5" />,           label: "Community" },
   { to: "/courses",   icon: <FolderOpen className="h-5 w-5" />,      label: "Courses" },
-  { to: "/ai-tools",  icon: <Brain className="h-5 w-5" />,           label: "AI Tools" },
+  { to: "/session",  icon: <Brain className="h-5 w-5" />,           label: "Study" },
   { to: "/documents", icon: <FileText className="h-5 w-5" />,        label: "Documents" },
   { to: "/notes",     icon: <Lightbulb className="h-5 w-5" />,       label: "Notes" },
   { to: "/settings",  icon: <Settings className="h-5 w-5" />,        label: "Settings" },
