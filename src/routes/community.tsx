@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { AppShell } from "@/src/routes/-AppShell";
+import { AppShell } from "@/src/routes/AppShell";
 import { useProfile } from "@/hooks/useProfile";
 import { requireAuth } from "@/lib/guards";
 import { Heart, MessageCircle, Plus, X, Zap } from "lucide-react";
