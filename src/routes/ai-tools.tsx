@@ -20,7 +20,7 @@ import { AppShell } from "@/components/sp/AppShell";
 export const Route = createFileRoute("/ai-tools")({
   head: () => ({
     meta: [
-      { title: "AI Tools | StudyPal" },
+      { title: "Study | StudyPal" },
       { name: "description", content: "Upload a document and ask the AI to summarize, quiz, or revise it." },
     ],
   }),
