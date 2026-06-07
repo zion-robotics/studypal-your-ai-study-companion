@@ -375,28 +375,31 @@ function DashboardPage() {
           </header>
 
           {/* ── Daily Pulse Card ────────────────────────────────────── */}
-          <div className="mt-6 rounded-2xl bg-white border p-6 flex items-center gap-8 shadow-sm">
+          <div className="mt-6 rounded-2xl bg-white border p-6 flex items-center gap-6 shadow-sm">
             <PulseRing percent={todayPct} />
-            <div className="flex-1 grid grid-cols-3 gap-4">
+
+            {/* ── CHANGED: stat pills — oval shape, centered text, no overflow ── */}
+            <div className="flex-1 grid grid-cols-3 gap-2 min-w-0">
               <StatPill
-                icon={<Flame className="h-4 w-4" />}
+                icon={<Flame className="h-3.5 w-3.5 shrink-0" />}
                 label="Day streak"
                 value={dataLoading ? "—" : `${progress.streak}`}
                 color="text-coral"
               />
               <StatPill
-                icon={<CheckCircle2 className="h-4 w-4" />}
+                icon={<CheckCircle2 className="h-3.5 w-3.5 shrink-0" />}
                 label="Sessions done"
                 value={dataLoading ? "—" : `${progress.total_sessions}`}
                 color="text-leaf"
               />
               <StatPill
-                icon={<TrendingUp className="h-4 w-4" />}
+                icon={<TrendingUp className="h-3.5 w-3.5 shrink-0" />}
                 label="Syllabus covered"
                 value={dataLoading ? "—" : `${progress.syllabus_coverage_percent}%`}
                 color="text-primary"
               />
             </div>
+
             <Link to="/session">
               <button className="rounded-xl bg-gradient-to-b from-coral to-primary px-5 py-3 text-white font-bold text-sm shadow-lg shadow-coral/30 hover:opacity-95 transition whitespace-nowrap flex items-center gap-2">
                 <Zap className="h-4 w-4" /> Start Session
@@ -632,15 +635,17 @@ function DashboardPage() {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
+// ── CHANGED: StatPill — oval shape, all content centered, no text overflow ──
 function StatPill({ icon, label, value, color }: {
   icon: React.ReactNode; label: string; value: string; color: string;
 }) {
   return (
-    <div className="rounded-xl border bg-sage-light/40 px-4 py-3 flex flex-col gap-1">
-      <div className={`flex items-center gap-1.5 text-xs font-bold ${color}`}>
-        {icon}{label}
+    <div className="rounded-full border bg-sage-light/40 px-2 py-4 flex flex-col items-center justify-center gap-1.5 min-w-0 overflow-hidden">
+      <div className={`flex items-center justify-center gap-1 ${color} min-w-0 w-full px-1`}>
+        {icon}
+        <span className="text-[10px] font-bold leading-tight truncate">{label}</span>
       </div>
-      <p className="text-2xl font-extrabold">{value}</p>
+      <p className="text-xl font-extrabold leading-none">{value}</p>
     </div>
   );
 }
