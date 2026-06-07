@@ -136,12 +136,12 @@ function useAethexVoice(lesson: LessonData | null) {
   }, []);
 
   const startVoiceSession = useCallback(async () => {
-    if (!lesson) return;
     setVoicePhase("connecting");
     setVoiceError(null);
     try {
-      // 1. Create agent
-      const { agentId } = await createAgent({ data: { subject: lesson.subject, voiceId: selectedVoice } });
+      // 1. Create agent — use lesson subject or fallback
+      const subject = lesson?.subject || "General Study Session";
+      const { agentId } = await createAgent({ data: { subject, voiceId: selectedVoice } });
 
       // 2. Start session → get ICE config
       const { sessionId, iceConfig } = await startSession({ data: { agentId } });
@@ -181,7 +181,7 @@ function useAethexVoice(lesson: LessonData | null) {
       setVoicePhase("error");
       setVoiceError(err?.message || "Failed to start voice session.");
     }
-  }, [lesson, selectedVoice]);
+  }, [lesson?.subject, selectedVoice]);
 
   const endVoiceSession = useCallback(() => {
     pcRef.current?.close();
@@ -340,10 +340,18 @@ function Session() {
   // ── Tool selection ──
   async function handleToolSelect(tool: ActiveTool) {
     if (tool === activeTool) { setActiveTool(null); return; }
-    setActiveTool(tool);
 
     const notes = docData?.extractedText || lesson?.notes || "";
-    const topic = currentTopic || lesson?.subject || "";
+
+    // If no content yet, prompt upload instead
+    if (!notes.trim()) {
+      fileInputRef.current?.click();
+      return;
+    }
+
+    setActiveTool(tool);
+
+    const topic = currentTopic || lesson?.subject || "General";
 
     if (tool === "summary" && !summary) {
       setSummaryLoading(true);
@@ -359,7 +367,7 @@ function Session() {
       finally { setSummaryLoading(false); }
     }
 
-    if (tool === "quiz" && questions.length === 0) {
+    if (tool === "quiz") {
       setQuestionsLoading(true);
       try {
         const result = await generateQuestions({
@@ -375,9 +383,15 @@ Return JSON: { "questions": [{ "q": "question text", "opts": ["A","B","C","D"], 
           },
         });
         const qs = (result as any)?.questions;
-        setQuestions(Array.isArray(qs) && qs.length > 0 ? qs : FALLBACK_QUESTIONS);
-      } catch { setQuestions(FALLBACK_QUESTIONS); }
-      finally { setQuestionsLoading(false); }
+        const finalQs = Array.isArray(qs) && qs.length > 0 ? qs : FALLBACK_QUESTIONS;
+        setQuestions(finalQs);
+        setQi(0); setPicks([]);
+        setPhase("quiz");
+      } catch {
+        setQuestions(FALLBACK_QUESTIONS);
+        setQi(0); setPicks([]);
+        setPhase("quiz");
+      } finally { setQuestionsLoading(false); }
     }
 
     if (tool === "flashcards" && flashcards.length === 0) {
@@ -396,8 +410,6 @@ Return JSON: { "flashcards": [{ "term": "key term or concept", "definition": "1-
       } catch { setFlashcards([]); }
       finally { setFlashcardsLoading(false); }
     }
-
-    if (tool === "quiz") { setQi(0); setPicks([]); setPhase("quiz"); }
   }
 
   // ── Quiz answer pick ──
@@ -682,7 +694,14 @@ Respond in plain text without markdown. Be educational and encouraging.`,
                       flashcards={flashcards}
                       flashcardsLoading={flashcardsLoading}
                       questionsLoading={questionsLoading}
-                      onStartQuiz={() => { if (questions.length > 0) { setQi(0); setPicks([]); setPhase("quiz"); } else handleToolSelect("quiz"); }}
+                      onStartQuiz={async () => {
+                        if (questions.length > 0) {
+                          setQi(0); setPicks([]); setPhase("quiz");
+                        } else {
+                          await handleToolSelect("quiz");
+                          setQi(0); setPicks([]);
+                        }
+                      }}
                     />
                   )}
 
@@ -1030,7 +1049,7 @@ function ToolsSection({
       {/* Tool chips */}
       <div className="flex flex-wrap gap-2">
         <ToolChip icon={<BookOpen className="h-3.5 w-3.5" />}   label="Summary"    active={activeTool === "summary"}    onClick={() => onToolSelect("summary")} />
-        <ToolChip icon={<ListChecks className="h-3.5 w-3.5" />} label="Quiz"       active={activeTool === "quiz"}       onClick={() => { onToolSelect("quiz"); onStartQuiz(); }} />
+        <ToolChip icon={<ListChecks className="h-3.5 w-3.5" />} label="Quiz"       active={activeTool === "quiz"}       onClick={() => onStartQuiz()} />
         <ToolChip icon={<Layers className="h-3.5 w-3.5" />}     label="Flashcards" active={activeTool === "flashcards"} onClick={() => onToolSelect("flashcards")} />
       </div>
 
@@ -1149,8 +1168,45 @@ function ChatSection({
   onSend: (t: string) => void;
   hasDoc: boolean;
 }) {
+  const [isListening, setIsListening] = useState(false);
+  const [micError, setMicError]       = useState<string | null>(null);
+  const recognitionRef                = useRef<any>(null);
+
   function handleKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(input); }
+  }
+
+  function toggleMic() {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) { setMicError("Speech recognition not supported in this browser."); return; }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    setMicError(null);
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+    recognition.continuous     = false;
+    recognition.interimResults = true;
+    recognition.lang           = "en-NG"; // Nigerian English
+
+    recognition.onstart  = () => setIsListening(true);
+    recognition.onend    = () => setIsListening(false);
+    recognition.onerror  = (e: any) => {
+      setIsListening(false);
+      if (e.error !== "no-speech") setMicError("Mic error: " + e.error);
+    };
+    recognition.onresult = (e: any) => {
+      const transcript = Array.from(e.results)
+        .map((r: any) => r[0].transcript)
+        .join("");
+      onInputChange(transcript);
+    };
+
+    recognition.start();
   }
 
   return (
@@ -1193,23 +1249,51 @@ function ChatSection({
       )}
 
       {/* Composer */}
-      <div className="rounded-2xl border border-border bg-card p-2 focus-within:border-accent/40 transition">
+      <div className={`rounded-2xl border bg-card p-2 transition ${isListening ? "border-accent shadow-[0_0_0_3px] shadow-accent/20" : "border-border focus-within:border-accent/40"}`}>
         <div className="flex items-end gap-2">
           <button onClick={() => {}} className="grid h-9 w-9 place-items-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition">
             <Paperclip className="h-4 w-4" />
           </button>
           <textarea rows={1} value={input} onChange={(e) => onInputChange(e.target.value)} onKeyDown={handleKey}
-            placeholder={hasDoc ? "Ask a question about your notes..." : "Ask anything academic..."}
+            placeholder={isListening ? "Listening... speak now" : hasDoc ? "Ask a question about your notes..." : "Ask anything academic..."}
             className="max-h-40 flex-1 resize-none bg-transparent px-1 py-2 text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none" />
+
+          {/* Mic button */}
+          <motion.button
+            onClick={toggleMic}
+            whileTap={{ scale: 0.92 }}
+            title={isListening ? "Stop listening" : "Speak your question"}
+            className={`grid h-9 w-9 place-items-center rounded-xl transition ${
+              isListening
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}>
+            {isListening ? (
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ repeat: Infinity, duration: 1 }}>
+                <Mic className="h-4 w-4" />
+              </motion.div>
+            ) : (
+              <Mic className="h-4 w-4" />
+            )}
+          </motion.button>
+
+          {/* Send button */}
           <button onClick={() => onSend(input)} disabled={isLoading || !input.trim()}
             className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-40 transition">
             <ArrowUp className="h-4 w-4" />
           </button>
         </div>
-        <div className="px-1 pt-1">
+        <div className="px-1 pt-1 flex items-center justify-between">
           <p className="text-[11px] text-muted-foreground">
-            StudyPal only answers academic questions. Responses may need verification.
+            {isListening
+              ? "🎙 Listening — speak clearly in English"
+              : "StudyPal only answers academic questions. Responses may need verification."}
           </p>
+          {micError && (
+            <p className="text-[11px] text-destructive">{micError}</p>
+          )}
         </div>
       </div>
 
