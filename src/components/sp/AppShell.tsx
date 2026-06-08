@@ -16,7 +16,7 @@ const NAV = [
   { to: "/dashboard", icon: <LayoutDashboard className="h-5 w-5" />, label: "Dashboard" },
   { to: "/community", icon: <Users className="h-5 w-5" />,           label: "Community" },
   { to: "/courses",   icon: <FolderOpen className="h-5 w-5" />,      label: "Courses" },
-  { to: "/session",  icon: <Brain className="h-5 w-5" />,           label: "Study" },
+  { to: "/study",  icon: <Brain className="h-5 w-5" />,           label: "Study" },
   { to: "/documents", icon: <FileText className="h-5 w-5" />,        label: "Documents" },
   { to: "/notes",     icon: <Lightbulb className="h-5 w-5" />,       label: "Notes" },
   { to: "/settings",  icon: <Settings className="h-5 w-5" />,        label: "Settings" },
@@ -116,7 +116,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Page content */}
-      <div className="flex-1 min-w-0 overflow-hidden">{children}</div>
+      <div className="flex-1 min-w-0 h-full overflow-hidden">{children}</div>
     </div>
   );
 }
