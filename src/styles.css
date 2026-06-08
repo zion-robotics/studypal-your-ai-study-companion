@@ -104,15 +104,15 @@
    border        0.32  ← borders sit above muted
 */
 .dark {
-  /* Page background — deep dark, but warm not cold */
+  /* Page background — deep dark, warm not cold */
   --background:         oklch(0.14 0.018 50);
-  --foreground:         oklch(0.95 0.012 80);  /* bright warm white — high contrast */
+  --foreground:         oklch(0.97 0.008 80);  /* near-pure white — crisp & readable */
 
   /* Cards clearly lifted from the background */
-  --card:               oklch(0.21 0.016 50);  /* +0.07 above bg — clearly visible lift */
-  --card-foreground:    oklch(0.95 0.012 80);
-  --popover:            oklch(0.21 0.016 50);
-  --popover-foreground: oklch(0.95 0.012 80);
+  --card:               oklch(0.22 0.016 50);
+  --card-foreground:    oklch(0.97 0.008 80);  /* same bright white inside cards */
+  --popover:            oklch(0.22 0.016 50);
+  --popover-foreground: oklch(0.97 0.008 80);
 
   /* Coral — brighter on dark for visibility */
   --primary:            oklch(0.72 0.22 38);
@@ -124,7 +124,7 @@
 
   /* Muted — clearly above card, used for subtle fills */
   --muted:              oklch(0.28 0.015 50);
-  --muted-foreground:   oklch(0.63 0.020 70);  /* readable subtext */
+  --muted-foreground:   oklch(0.72 0.018 75);  /* warm light grey — clearly readable subtext */
 
   /* ★ ACCENT = coral, bright enough to pop on dark bg ★ */
   --accent:             oklch(0.72 0.22 38);
@@ -166,4 +166,67 @@
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* ── Professional polish utilities ─────────────────────────────────────────── */
+
+/* Coral glow — wrap any coral button/badge with this for a premium feel */
+.glow-coral {
+  box-shadow: 0 0 0 1px oklch(0.64 0.21 38 / 0.25),
+              0 4px 24px -4px oklch(0.64 0.21 38 / 0.45);
+}
+.dark .glow-coral {
+  box-shadow: 0 0 0 1px oklch(0.72 0.22 38 / 0.30),
+              0 4px 32px -4px oklch(0.72 0.22 38 / 0.55);
+}
+
+/* Card depth — richer shadow for elevated cards */
+.card-depth {
+  box-shadow: 0 1px 2px oklch(0 0 0 / 0.04),
+              0 4px 16px -4px oklch(0 0 0 / 0.10),
+              0 12px 40px -12px oklch(0 0 0 / 0.08);
+}
+.dark .card-depth {
+  box-shadow: 0 1px 2px oklch(0 0 0 / 0.25),
+              0 4px 16px -4px oklch(0 0 0 / 0.40),
+              0 12px 40px -12px oklch(0 0 0 / 0.35);
+}
+
+/* Shimmer text — for hero highlights, stat numbers, section labels */
+.text-shimmer {
+  background: linear-gradient(
+    105deg,
+    oklch(0.64 0.21 38) 0%,
+    oklch(0.75 0.19 45) 40%,
+    oklch(0.64 0.21 38) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+@keyframes shimmer {
+  from { background-position: 0% center; }
+  to   { background-position: 200% center; }
+}
+
+/* Tilt card — subtle 3-D lift on hover (works with JS or CSS alone) */
+.tilt-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.tilt-card:hover {
+  transform: translateY(-3px) scale(1.005);
+  box-shadow: 0 16px 48px -16px oklch(0.64 0.21 38 / 0.20);
+}
+.dark .tilt-card:hover {
+  box-shadow: 0 16px 48px -16px oklch(0.72 0.22 38 / 0.30);
+}
+
+/* Button press feel */
+.btn-press {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.btn-press:active {
+  transform: scale(0.96);
 }
