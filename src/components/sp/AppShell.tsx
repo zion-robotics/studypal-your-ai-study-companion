@@ -11,6 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import { useAuth, getInitials } from "@/hooks/useAuth";
+import { OfflineBanner } from '@/components/OfflineBanner'
 
 const NAV = [
   { to: "/dashboard", icon: <LayoutDashboard className="h-5 w-5" />, label: "Dashboard" },
