@@ -10,7 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
 
-import appCss = "../styles.css?url";
+import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/lib/supabase";
 
