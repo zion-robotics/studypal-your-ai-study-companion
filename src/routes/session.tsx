@@ -17,7 +17,9 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
-import { AppShell } from "./-AppShell";
+import { AppShell } from "@/components/sp/AppShell";
+import { groqChat, groqStructured } from "@/lib/groq";
+import { openRouterVision } from "@/lib/openrouter.server";
 
 export const Route = createFileRoute("/session")({
   head: () => ({
@@ -26,7 +28,7 @@ export const Route = createFileRoute("/session")({
       { name: "description", content: "Upload a document and ask the AI to summarize, quiz, or revise it." },
     ],
   }),
-  component: AiToolsPage,
+  component: SessionPage,
 });
 
 type Tool = null | "summary" | "quiz" | "flashcards";
@@ -56,14 +58,7 @@ type DocData = {
   imageMimeType?: string;
 };
 
-const API_KEY = "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";
-const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const TEXT_MODEL = "openai/gpt-4o-mini";
-const VISION_MODEL = "openai/gpt-4o";
-
 // ── TTS CONFIG ──────────────────────────────────────────────────────────────
-// Aethex TTS is the primary provider (pending host allowlist approval).
-// Proxy auto-falls back to ElevenLabs Nigerian voices until Aethex activates.
 const TTS_PROXY = "http://localhost:3001";
 const AETHEX_TTS_NOTE = "Aethex Voice API (ElevenLabs Nigerian voices active as fallback)";
 
@@ -177,26 +172,41 @@ async function imageToBase64(file: File): Promise<string> {
   });
 }
 
-async function callOpenRouter(messages: any[], systemPrompt?: string, useVision = false): Promise<string> {
-  const model = useVision ? VISION_MODEL : TEXT_MODEL;
-  const body: any = {
-    model,
-    messages: systemPrompt ? [{ role: "system", content: systemPrompt }, ...messages] : messages,
-  };
-  const res = await fetch(OPENROUTER_URL, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `API error ${res.status}`);
-  }
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content || "No response received.";
+// ── API HELPERS ──────────────────────────────────────────────────────────────
+
+async function callText(
+  messages: { role: "system" | "user" | "assistant"; content: string }[]
+): Promise<string> {
+  const result = await groqChat({ data: { messages } });
+  return result.text;
 }
 
-function buildDocMessage(docData: DocData, prompt: string): any {
+async function callVision(
+  messages: { role: "user" | "assistant" | "system"; content: any }[],
+  systemPrompt?: string
+): Promise<string> {
+  const result = await openRouterVision({ data: { messages, systemPrompt } });
+  return result.text;
+}
+
+async function callStructured(prompt: string, schemaHint?: string): Promise<any> {
+  return groqStructured({ data: { prompt, schemaHint } });
+}
+
+function buildTextMessages(
+  systemPrompt: string,
+  userContent: string
+): { role: "system" | "user" | "assistant"; content: string }[] {
+  return [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userContent },
+  ];
+}
+
+function buildVisionMessage(
+  docData: DocData,
+  prompt: string
+): { role: "user"; content: any } {
   if (docData.isImage && docData.imageBase64 && docData.imageMimeType) {
     return {
       role: "user",
@@ -212,7 +222,7 @@ function buildDocMessage(docData: DocData, prompt: string): any {
   };
 }
 
-function AiToolsPage() {
+function SessionPage() {
   const [docData, setDocData] = useState<DocData | null>(null);
   const [tool, setTool] = useState<Tool>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -267,8 +277,15 @@ function AiToolsPage() {
       }
       const doc: DocData = { name: file.name, size: formatFileSize(file.size), extractedText, isImage, imageBase64, imageMimeType };
       setDocData(doc);
-      const introMsg = buildDocMessage(doc, `In 2-3 sentences, tell the student what this document is about and what you can help them with. Be conversational and encouraging. No markdown.`);
-      const intro = await callOpenRouter([introMsg], undefined, isImage);
+
+      let intro: string;
+      if (doc.isImage) {
+        const msg = buildVisionMessage(doc, `In 2-3 sentences, tell the student what this document is about and what you can help them with. Be conversational and encouraging. No markdown.`);
+        intro = await callVision([msg]);
+      } else {
+        const userContent = `Here is the content of the document "${doc.name}":\n\n${doc.extractedText}\n\n---\n\nIn 2-3 sentences, tell the student what this document is about and what you can help them with. Be conversational and encouraging. No markdown.`;
+        intro = await callText(buildTextMessages(SYSTEM_PROMPT, userContent));
+      }
       setIntroMessage(intro);
     } catch (err: any) {
       alert("Failed to process document: " + (err.message || "Unknown error"));
@@ -282,29 +299,74 @@ function AiToolsPage() {
     if (newTool === tool) { setTool(null); return; }
     setTool(newTool);
     if (!docData) return;
+
     if (newTool === "summary" && !summary) {
       setToolLoading(true);
       try {
-        const msg = buildDocMessage(docData, `Provide a long, detailed summary of this document. Write in plain flowing paragraphs. Cover all key concepts clearly. No markdown.`);
-        setSummary(await callOpenRouter([msg], undefined, docData.isImage));
+        if (docData.isImage) {
+          const msg = buildVisionMessage(docData, `Provide a long, detailed summary of this document. Write in plain flowing paragraphs. Cover all key concepts clearly. No markdown.`);
+          setSummary(await callVision([msg]));
+        } else {
+          const userContent = `Here is the content of "${docData.name}":\n\n${docData.extractedText}\n\n---\n\nProvide a long, detailed summary. Write in plain flowing paragraphs. Cover all key concepts clearly. No markdown.`;
+          setSummary(await callText(buildTextMessages(SYSTEM_PROMPT, userContent)));
+        }
       } catch (err: any) {
         setSummary("Failed to generate summary: " + (err.message || "Unknown error"));
       } finally { setToolLoading(false); }
     }
+
     if (newTool === "quiz" && quizData.length === 0) {
       setToolLoading(true);
       try {
-        const msg = buildDocMessage(docData, `Generate exactly 8 multiple-choice quiz questions. Return ONLY a valid JSON array, no markdown, no backticks. Shape: {"question":"...","options":[{"label":"A","text":"...","correct":false}],"explanation":"..."}. Exactly one correct per question.`);
-        const result = await callOpenRouter([msg], undefined, docData.isImage);
-        setQuizData(JSON.parse(result.replace(/```json|```/g, "").trim()));
+        const basePrompt = docData.isImage
+          ? `Generate exactly 8 multiple-choice quiz questions based on the image content.`
+          : `Here is the content of "${docData.name}":\n\n${docData.extractedText}\n\n---\n\nGenerate exactly 8 multiple-choice quiz questions.`;
+        const fullPrompt = `${basePrompt} Return ONLY a valid JSON array. Shape: [{"question":"...","options":[{"label":"A","text":"...","correct":false}],"explanation":"..."}]. Exactly one correct option per question.`;
+
+        let raw: any;
+        if (docData.isImage) {
+          const msg = buildVisionMessage(docData, fullPrompt);
+          const text = await callVision([msg]);
+          raw = JSON.parse(text.replace(/```json|```/g, "").trim());
+        } else {
+          raw = await callStructured(fullPrompt, `Array of quiz question objects.`);
+          // groqStructured wraps in json_object mode — handle both array and {questions:[]}
+          if (Array.isArray(raw)) {
+            // great
+          } else if (Array.isArray(raw?.questions)) {
+            raw = raw.questions;
+          } else {
+            raw = [];
+          }
+        }
+        setQuizData(raw);
       } catch { setQuizData([]); } finally { setToolLoading(false); }
     }
+
     if (newTool === "flashcards" && flashcardData.length === 0) {
       setToolLoading(true);
       try {
-        const msg = buildDocMessage(docData, `Generate exactly 12 flashcards. Return ONLY a valid JSON array, no markdown, no backticks. Shape: {"term":"...","definition":"..."}. Keep definitions 1-2 sentences.`);
-        const result = await callOpenRouter([msg], undefined, docData.isImage);
-        setFlashcardData(JSON.parse(result.replace(/```json|```/g, "").trim()));
+        const basePrompt = docData.isImage
+          ? `Generate exactly 12 flashcards based on the image content.`
+          : `Here is the content of "${docData.name}":\n\n${docData.extractedText}\n\n---\n\nGenerate exactly 12 flashcards.`;
+        const fullPrompt = `${basePrompt} Return ONLY a valid JSON array. Shape: [{"term":"...","definition":"..."}]. Keep definitions 1-2 sentences.`;
+
+        let raw: any;
+        if (docData.isImage) {
+          const msg = buildVisionMessage(docData, fullPrompt);
+          const text = await callVision([msg]);
+          raw = JSON.parse(text.replace(/```json|```/g, "").trim());
+        } else {
+          raw = await callStructured(fullPrompt, `Array of flashcard objects with term and definition.`);
+          if (Array.isArray(raw)) {
+            // great
+          } else if (Array.isArray(raw?.flashcards)) {
+            raw = raw.flashcards;
+          } else {
+            raw = [];
+          }
+        }
+        setFlashcardData(raw);
       } catch { setFlashcardData([]); } finally { setToolLoading(false); }
     }
   }
@@ -316,25 +378,27 @@ function AiToolsPage() {
     setMessages(updatedMessages);
     setIsLoading(true);
     try {
-      let apiMessages: any[];
-      if (docData) {
-        const docContext = docData.isImage
-          ? `The student has uploaded an image called "${docData.name}".`
-          : `The student has uploaded "${docData.name}". Content:\n\n${docData.extractedText}\n\n---`;
+      let reply: string;
+
+      if (docData?.isImage) {
         const historyText = messages.map((m) => `${m.role === "user" ? "Student" : "Assistant"}: ${m.content}`).join("\n");
-        apiMessages = [{
-          role: "user",
-          content: docData.isImage && docData.imageBase64
-            ? [
-                { type: "image_url", image_url: { url: `data:${docData.imageMimeType};base64,${docData.imageBase64}` } },
-                { type: "text", text: `${historyText ? historyText + "\n\n" : ""}Student: ${text}` },
-              ]
-            : `${docContext}\n\n${historyText ? historyText + "\n\n" : ""}Student: ${text}`,
-        }];
+        const visionMsg = {
+          role: "user" as const,
+          content: [
+            { type: "image_url", image_url: { url: `data:${docData.imageMimeType};base64,${docData.imageBase64}` } },
+            { type: "text", text: `${historyText ? historyText + "\n\n" : ""}Student: ${text}` },
+          ],
+        };
+        reply = await callVision([visionMsg], SYSTEM_PROMPT);
       } else {
-        apiMessages = updatedMessages.map((m) => ({ role: m.role, content: m.content }));
+        const docContext = docData
+          ? `The student has uploaded "${docData.name}". Content:\n\n${docData.extractedText}\n\n---\n\n`
+          : "";
+        const historyText = messages.map((m) => `${m.role === "user" ? "Student" : "Assistant"}: ${m.content}`).join("\n");
+        const userContent = `${docContext}${historyText ? historyText + "\n\n" : ""}Student: ${text}`;
+        reply = await callText(buildTextMessages(SYSTEM_PROMPT, userContent));
       }
-      const reply = await callOpenRouter(apiMessages, SYSTEM_PROMPT, docData?.isImage ?? false);
+
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } catch {
       setMessages((prev) => [...prev, { role: "assistant", content: "Something went wrong. Please check your connection and try again." }]);
@@ -659,9 +723,7 @@ function QuizPanel({ questions, ttsVoice, ttsAudioRef }: { questions: QuizQuesti
 
   return (
     <Panel title="Practice quiz" hint={`Question ${current + 1} of ${questions.length}`}>
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-[15px] font-semibold text-foreground">{q.question}</p>
-      </div>
+      <p className="text-[15px] font-semibold text-foreground">{q.question}</p>
       <SpeakButton text={speakText} ttsVoice={ttsVoice} ttsAudioRef={ttsAudioRef} />
       <div className="mt-4 space-y-2">
         {q.options.map((o) => {
