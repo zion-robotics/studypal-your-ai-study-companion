@@ -1,3 +1,4 @@
+
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -31,126 +32,138 @@
   --color-ring: var(--ring);
   --color-sidebar-dark: var(--sidebar-dark);
   --color-sidebar-dark-foreground: var(--sidebar-dark-foreground);
+  /* ── Brand tokens exposed to Tailwind ── */
   --color-sage: var(--sage);
   --color-sage-light: var(--sage-light);
   --color-coral: var(--coral);
   --color-coral-light: var(--coral-light);
+  --color-teal: var(--teal);           /* NEW — blue-green accent */
+  --color-teal-light: var(--teal-light);
   --color-cream: var(--cream);
   --color-leaf: var(--leaf);
   --font-display: "Nunito", sans-serif;
 }
 
+/* ════════════════════════════════════════════════════════════════════════════
+   COLOUR SYSTEM — three-accent hierarchy
+   ────────────────────────────────────────────────────────────────────────────
+   CORAL   → CTAs, primary buttons, logo, hero highlights   (action / brand)
+   TEAL    → progress, streaks, live badges, links, rings   (status / info)
+   SAGE    → study-feature cards, secondary badges          (content / calm)
+   ════════════════════════════════════════════════════════════════════════════ */
+
 /* ── LIGHT MODE ─────────────────────────────────────────────────────────────── */
 :root {
   --radius: 1rem;
 
-  /* Base — warm cream matching the dashboard background */
-  --background:         oklch(0.97 0.015 85);   /* warm cream */
-  --foreground:         oklch(0.15 0.025 45);   /* rich warm near-black — clear & readable */
+  /* Base */
+  --background:         oklch(0.97 0.015 85);
+  --foreground:         oklch(0.14 0.025 45);
 
-  /* Cards — clean warm white, clearly lifted above bg */
+  /* Cards */
   --card:               oklch(1.00 0.005 85);
-  --card-foreground:    oklch(0.15 0.025 45);
+  --card-foreground:    oklch(0.14 0.025 45);
   --popover:            oklch(1.00 0.005 85);
-  --popover-foreground: oklch(0.15 0.025 45);
+  --popover-foreground: oklch(0.14 0.025 45);
 
-  /* Primary = coral-orange — the dominant brand colour from the dashboard logo & CTA */
-  --primary:            oklch(0.64 0.21 38);    /* bold coral-orange */
+  /* Primary = coral */
+  --primary:            oklch(0.64 0.21 38);
   --primary-foreground: oklch(1 0 0);
 
-  /* Secondary = sage green — used for supporting cards & badges, not buttons */
+  /* Secondary = sage */
   --secondary:          oklch(0.88 0.08 145);
   --secondary-foreground: oklch(0.25 0.08 148);
 
-  /* Muted — warm greige, clearly distinct from card white */
+  /* Muted */
   --muted:              oklch(0.93 0.018 80);
-  --muted-foreground:   oklch(0.48 0.03 55);   /* warm mid-grey — readable but not loud */
+  --muted-foreground:   oklch(0.48 0.030 55);
 
-  /* ★ ACCENT = CORAL-ORANGE ★
-     This is the fix — accent was sage green before.
-     All buttons, highlights, hero text, icons now use the same coral as the dashboard. */
-  --accent:             oklch(0.64 0.21 38);    /* same as --primary: bold coral */
-  --accent-foreground:  oklch(1 0 0);           /* white text on coral — clear contrast */
+  /* Accent = coral (buttons, icons, highlights) */
+  --accent:             oklch(0.64 0.21 38);
+  --accent-foreground:  oklch(1 0 0);
 
   /* Destructive */
   --destructive:        oklch(0.58 0.23 27);
   --destructive-foreground: oklch(1 0 0);
 
-  /* Borders & inputs — warm not cold grey */
+  /* Borders */
   --border:             oklch(0.89 0.022 80);
   --input:              oklch(0.89 0.022 80);
-  --ring:               oklch(0.64 0.21 38);   /* coral focus ring */
+  --ring:               oklch(0.56 0.18 200);  /* teal focus ring */
 
-  /* Sidebar — dark charcoal matching the dashboard sidebar exactly */
+  /* Sidebar */
   --sidebar-dark:            oklch(0.18 0.018 255);
   --sidebar-dark-foreground: oklch(0.92 0.012 85);
 
-  /* Brand palette tokens — referenced directly in components */
-  --sage:               oklch(0.82 0.10 145);  /* the green from dashboard study cards */
+  /* ── Brand palette ── */
+  --coral:              oklch(0.64 0.21 38);
+  --coral-light:        oklch(0.88 0.10 38);
+
+  --teal:               oklch(0.56 0.18 200);   /* vivid blue-green */
+  --teal-light:         oklch(0.88 0.09 200);   /* soft teal tint */
+
+  --sage:               oklch(0.82 0.10 145);
   --sage-light:         oklch(0.91 0.06 145);
+
   --cream:              oklch(0.96 0.03 85);
-  --coral:              oklch(0.64 0.21 38);   /* = accent = primary */
-  --coral-light:        oklch(0.82 0.12 38);   /* hover / tint states */
-  --leaf:               oklch(0.55 0.18 148);  /* deeper green for tags */
+  --leaf:               oklch(0.50 0.18 148);
 }
 
 /* ── DARK MODE ──────────────────────────────────────────────────────────────── */
 /*
-   Layer stack (light → dark, clearly separated):
-   sidebar-dark  0.11  ← darkest, the left rail
-   background    0.14  ← main page bg
-   card          0.21  ← cards / panels — noticeably lighter than bg
-   muted         0.28  ← muted fills / input backgrounds
-   border        0.32  ← borders sit above muted
+   Elevation stack — each layer clearly distinct:
+   --sidebar-dark   L 0.11   darkest rail
+   --background     L 0.14   page canvas
+   --card           L 0.22   panels / cards    (+0.08 lift)
+   --muted          L 0.29   fills / inputs    (+0.07 lift)
+   --border         L 0.34   visible borders   (+0.05 lift)
 */
 .dark {
-  /* Page background — deep dark, warm not cold */
   --background:         oklch(0.14 0.018 50);
-  --foreground:         oklch(0.97 0.008 80);  /* near-pure white — crisp & readable */
+  --foreground:         oklch(0.97 0.008 80);
 
-  /* Cards clearly lifted from the background */
   --card:               oklch(0.22 0.016 50);
-  --card-foreground:    oklch(0.97 0.008 80);  /* same bright white inside cards */
+  --card-foreground:    oklch(0.97 0.008 80);
   --popover:            oklch(0.22 0.016 50);
   --popover-foreground: oklch(0.97 0.008 80);
 
-  /* Coral — brighter on dark for visibility */
   --primary:            oklch(0.72 0.22 38);
   --primary-foreground: oklch(1 0 0);
 
-  /* Sage green — muted on dark */
   --secondary:          oklch(0.30 0.07 145);
   --secondary-foreground: oklch(0.88 0.07 145);
 
-  /* Muted — clearly above card, used for subtle fills */
-  --muted:              oklch(0.28 0.015 50);
-  --muted-foreground:   oklch(0.72 0.018 75);  /* warm light grey — clearly readable subtext */
+  --muted:              oklch(0.29 0.015 50);
+  --muted-foreground:   oklch(0.74 0.016 75);
 
-  /* ★ ACCENT = coral, bright enough to pop on dark bg ★ */
   --accent:             oklch(0.72 0.22 38);
   --accent-foreground:  oklch(1 0 0);
 
   --destructive:        oklch(0.64 0.22 27);
   --destructive-foreground: oklch(1 0 0);
 
-  /* Borders — visible but not glaring */
-  --border:             oklch(0.32 0.014 55);
-  --input:              oklch(0.28 0.015 50);
-  --ring:               oklch(0.72 0.22 38);
+  --border:             oklch(0.34 0.014 55);
+  --input:              oklch(0.29 0.015 50);
+  --ring:               oklch(0.62 0.20 200);  /* teal ring on dark */
 
-  /* Sidebar — the darkest layer, matching the dashboard left rail */
   --sidebar-dark:            oklch(0.11 0.014 50);
   --sidebar-dark-foreground: oklch(0.90 0.010 80);
 
-  /* Brand tokens */
-  --sage:               oklch(0.50 0.11 145);
-  --sage-light:         oklch(0.32 0.07 145);
-  --cream:              oklch(0.22 0.020 65);
+  /* Brand — all brighter for dark bg */
   --coral:              oklch(0.72 0.22 38);
-  --coral-light:        oklch(0.40 0.14 38);
+  --coral-light:        oklch(0.32 0.12 38);
+
+  --teal:               oklch(0.62 0.20 200);
+  --teal-light:         oklch(0.26 0.10 200);
+
+  --sage:               oklch(0.52 0.11 145);
+  --sage-light:         oklch(0.30 0.07 145);
+
+  --cream:              oklch(0.22 0.020 65);
   --leaf:               oklch(0.56 0.17 148);
 }
 
+/* ── Base resets ─────────────────────────────────────────────────────────────── */
 @layer base {
   * { border-color: var(--color-border); }
   body {
@@ -160,73 +173,452 @@
   }
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+
+/* ════════════════════════════════════════════════════════════════════════════
+   LANDING PAGE — CREATIVE UTILITY LAYER
+   Pro-grade effects for hero, sections, cards, and interactive elements
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. NOISE TEXTURE OVERLAY
+       Adds subtle grain to any section — makes flat colours feel printed/physical */
+.texture-noise::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  pointer-events: none;
+  z-index: 0;
 }
 
-/* ── Professional polish utilities ─────────────────────────────────────────── */
-
-/* Coral glow — wrap any coral button/badge with this for a premium feel */
-.glow-coral {
-  box-shadow: 0 0 0 1px oklch(0.64 0.21 38 / 0.25),
-              0 4px 24px -4px oklch(0.64 0.21 38 / 0.45);
+/* ── 2. AURORA GRADIENT HERO BG
+       Soft multi-stop radial glow — coral + teal pools of light in background */
+.bg-aurora {
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 50%,  oklch(0.64 0.21 38 / 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 80% at 80% 30%,  oklch(0.56 0.18 200 / 0.10) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 50% at 50% 100%, oklch(0.82 0.10 145 / 0.08) 0%, transparent 60%),
+    var(--color-background);
 }
-.dark .glow-coral {
-  box-shadow: 0 0 0 1px oklch(0.72 0.22 38 / 0.30),
-              0 4px 32px -4px oklch(0.72 0.22 38 / 0.55);
-}
-
-/* Card depth — richer shadow for elevated cards */
-.card-depth {
-  box-shadow: 0 1px 2px oklch(0 0 0 / 0.04),
-              0 4px 16px -4px oklch(0 0 0 / 0.10),
-              0 12px 40px -12px oklch(0 0 0 / 0.08);
-}
-.dark .card-depth {
-  box-shadow: 0 1px 2px oklch(0 0 0 / 0.25),
-              0 4px 16px -4px oklch(0 0 0 / 0.40),
-              0 12px 40px -12px oklch(0 0 0 / 0.35);
+.dark .bg-aurora {
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 50%,  oklch(0.72 0.22 38 / 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 80% at 80% 30%,  oklch(0.62 0.20 200 / 0.14) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 50% at 50% 100%, oklch(0.52 0.11 145 / 0.10) 0%, transparent 60%),
+    var(--color-background);
 }
 
-/* Shimmer text — for hero highlights, stat numbers, section labels */
+/* ── 3. SHIMMER TEXT — coral → gold → coral sweep animation
+       Use on hero headline spans, stat numbers, section counters */
 .text-shimmer {
   background: linear-gradient(
-    105deg,
-    oklch(0.64 0.21 38) 0%,
-    oklch(0.75 0.19 45) 40%,
-    oklch(0.64 0.21 38) 100%
+    110deg,
+    oklch(0.64 0.21 38)  0%,
+    oklch(0.78 0.18 50)  35%,
+    oklch(0.64 0.21 38)  70%,
+    oklch(0.78 0.18 50)  100%
   );
-  background-size: 200% auto;
+  background-size: 250% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: shimmer 3s linear infinite;
+  animation: shimmer 4s linear infinite;
 }
+
+/* Teal shimmer variant — for progress/info highlights */
+.text-shimmer-teal {
+  background: linear-gradient(
+    110deg,
+    oklch(0.56 0.18 200) 0%,
+    oklch(0.72 0.16 185) 40%,
+    oklch(0.56 0.18 200) 80%,
+    oklch(0.72 0.16 185) 100%
+  );
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+.dark .text-shimmer-teal {
+  background: linear-gradient(
+    110deg,
+    oklch(0.62 0.20 200) 0%,
+    oklch(0.78 0.17 185) 40%,
+    oklch(0.62 0.20 200) 80%,
+    oklch(0.78 0.17 185) 100%
+  );
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
 @keyframes shimmer {
   from { background-position: 0% center; }
-  to   { background-position: 200% center; }
+  to   { background-position: 250% center; }
 }
 
-/* Tilt card — subtle 3-D lift on hover (works with JS or CSS alone) */
+/* ── 4. GLOWING BADGES
+       Coral and Teal pill badges with a soft halo — used on section labels */
+.badge-coral {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.85rem;
+  border-radius: 9999px;
+  background: oklch(0.64 0.21 38 / 0.12);
+  border: 1px solid oklch(0.64 0.21 38 / 0.35);
+  color: oklch(0.55 0.20 38);
+  font-size: 0.7rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 0 12px -2px oklch(0.64 0.21 38 / 0.25);
+}
+.dark .badge-coral {
+  background: oklch(0.72 0.22 38 / 0.15);
+  border-color: oklch(0.72 0.22 38 / 0.40);
+  color: oklch(0.80 0.18 38);
+  box-shadow: 0 0 16px -2px oklch(0.72 0.22 38 / 0.35);
+}
+
+.badge-teal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.85rem;
+  border-radius: 9999px;
+  background: oklch(0.56 0.18 200 / 0.10);
+  border: 1px solid oklch(0.56 0.18 200 / 0.30);
+  color: oklch(0.44 0.18 200);
+  font-size: 0.7rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 0 12px -2px oklch(0.56 0.18 200 / 0.20);
+}
+.dark .badge-teal {
+  background: oklch(0.62 0.20 200 / 0.15);
+  border-color: oklch(0.62 0.20 200 / 0.35);
+  color: oklch(0.78 0.16 200);
+  box-shadow: 0 0 16px -2px oklch(0.62 0.20 200 / 0.30);
+}
+
+/* ── 5. TILT CARD — 3-D lift on hover with coloured shadow */
 .tilt-card {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.30s cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 0.30s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .tilt-card:hover {
-  transform: translateY(-3px) scale(1.005);
-  box-shadow: 0 16px 48px -16px oklch(0.64 0.21 38 / 0.20);
+  transform: translateY(-4px) scale(1.008);
+  box-shadow: 0 20px 60px -20px oklch(0.64 0.21 38 / 0.22);
 }
 .dark .tilt-card:hover {
-  box-shadow: 0 16px 48px -16px oklch(0.72 0.22 38 / 0.30);
+  box-shadow: 0 20px 60px -20px oklch(0.72 0.22 38 / 0.32);
 }
 
-/* Button press feel */
+/* Teal variant for progress / how-it-works cards */
+.tilt-card-teal:hover {
+  transform: translateY(-4px) scale(1.008);
+  box-shadow: 0 20px 60px -20px oklch(0.56 0.18 200 / 0.25);
+}
+.dark .tilt-card-teal:hover {
+  box-shadow: 0 20px 60px -20px oklch(0.62 0.20 200 / 0.35);
+}
+
+/* ── 6. CARD DEPTH — layered shadow system */
+.card-depth {
+  box-shadow:
+    0 1px 2px  oklch(0 0 0 / 0.04),
+    0 4px 16px -4px  oklch(0 0 0 / 0.08),
+    0 16px 48px -16px oklch(0 0 0 / 0.06);
+}
+.dark .card-depth {
+  box-shadow:
+    0 1px 2px  oklch(0 0 0 / 0.30),
+    0 4px 16px -4px  oklch(0 0 0 / 0.45),
+    0 16px 48px -16px oklch(0 0 0 / 0.40);
+}
+
+/* ── 7. GLOW EFFECTS — coral and teal halos */
+.glow-coral {
+  box-shadow:
+    0 0 0 1px oklch(0.64 0.21 38 / 0.20),
+    0 4px 24px -4px oklch(0.64 0.21 38 / 0.50),
+    0 12px 48px -12px oklch(0.64 0.21 38 / 0.25);
+}
+.dark .glow-coral {
+  box-shadow:
+    0 0 0 1px oklch(0.72 0.22 38 / 0.25),
+    0 4px 32px -4px oklch(0.72 0.22 38 / 0.60),
+    0 12px 48px -12px oklch(0.72 0.22 38 / 0.30);
+}
+
+.glow-teal {
+  box-shadow:
+    0 0 0 1px oklch(0.56 0.18 200 / 0.20),
+    0 4px 24px -4px oklch(0.56 0.18 200 / 0.45),
+    0 12px 48px -12px oklch(0.56 0.18 200 / 0.20);
+}
+.dark .glow-teal {
+  box-shadow:
+    0 0 0 1px oklch(0.62 0.20 200 / 0.25),
+    0 4px 32px -4px oklch(0.62 0.20 200 / 0.55),
+    0 12px 48px -12px oklch(0.62 0.20 200 / 0.28);
+}
+
+/* ── 8. BUTTON PRESS */
 .btn-press {
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
 }
-.btn-press:active {
-  transform: scale(0.96);
+.btn-press:hover  { filter: brightness(1.08); }
+.btn-press:active { transform: scale(0.95); filter: brightness(0.96); }
+
+/* ── 9. GRADIENT BORDER CARD
+       The "how it works" step cards — visible gradient border that uses teal */
+.border-gradient-teal {
+  position: relative;
+  border: none !important;
+  background: var(--color-card);
+  border-radius: var(--radius-2xl);
 }
+.border-gradient-teal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(
+    135deg,
+    oklch(0.56 0.18 200 / 0.60),
+    oklch(0.64 0.21 38 / 0.25),
+    oklch(0.56 0.18 200 / 0.10)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.dark .border-gradient-teal::before {
+  background: linear-gradient(
+    135deg,
+    oklch(0.62 0.20 200 / 0.70),
+    oklch(0.72 0.22 38 / 0.30),
+    oklch(0.62 0.20 200 / 0.15)
+  );
+}
+
+/* ── 10. STEP NUMBER PILL
+        For "01 / 02 / 03" section labels — teal outlined pill */
+.step-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.7rem;
+  border-radius: 9999px;
+  background: oklch(0.56 0.18 200 / 0.08);
+  border: 1.5px solid oklch(0.56 0.18 200 / 0.45);
+  color: oklch(0.44 0.18 200);
+  font-size: 0.65rem;
+  font-family: monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.dark .step-pill {
+  background: oklch(0.62 0.20 200 / 0.12);
+  border-color: oklch(0.62 0.20 200 / 0.50);
+  color: oklch(0.74 0.16 200);
+}
+
+/* ── 11. PROGRESS RING TEAL
+        The circular progress in the hero mockup card uses teal instead of sage */
+.ring-teal {
+  color: oklch(0.56 0.18 200);
+}
+.dark .ring-teal {
+  color: oklch(0.62 0.20 200);
+}
+
+/* ── 12. SECTION DIVIDER GRADIENT
+        Decorative HR between big sections */
+.divider-gradient {
+  border: none;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.56 0.18 200 / 0.40) 30%,
+    oklch(0.64 0.21 38 / 0.40) 70%,
+    transparent 100%
+  );
+}
+
+/* ── 13. FLOATING DOT — animated pulse for live/online indicators */
+.dot-live {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: oklch(0.56 0.18 200);
+  flex-shrink: 0;
+}
+.dot-live::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  background: oklch(0.56 0.18 200 / 0.35);
+  animation: ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.dark .dot-live        { background: oklch(0.62 0.20 200); }
+.dark .dot-live::after { background: oklch(0.62 0.20 200 / 0.40); }
+
+@keyframes ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+/* ── 14. STAT COUNTER BLOCK
+        Used in the Stats dark stripe section */
+.stat-block {
+  position: relative;
+  padding-left: 1rem;
+}
+.stat-block::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.3rem;
+  bottom: 0.3rem;
+  width: 3px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    180deg,
+    oklch(0.64 0.21 38) 0%,
+    oklch(0.56 0.18 200) 100%
+  );
+}
+
+/* ── 15. HERO BADGE PULSE — the "YPIT HACKATHON" pill */
+.badge-pulse {
+  animation: badge-breathe 3s ease-in-out infinite;
+}
+@keyframes badge-breathe {
+  0%, 100% { box-shadow: 0 0 0 0px oklch(0.56 0.18 200 / 0.0); }
+  50%       { box-shadow: 0 0 0 4px oklch(0.56 0.18 200 / 0.20); }
+}
+
+/* ── 16. FEATURE ICON CONTAINER — coral with teal inner glow on hover */
+.feature-icon {
+  background: oklch(0.64 0.21 38);
+  color: #fff;
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+.feature-icon:hover,
+.group:hover .feature-icon {
+  background: oklch(0.60 0.20 38);
+  box-shadow: 0 0 0 3px oklch(0.56 0.18 200 / 0.25),
+              0 4px 16px -4px oklch(0.64 0.21 38 / 0.55);
+}
+
+/* ── 17. TESTIMONIAL QUOTE MARK — decorative large teal " */
+.quote-mark::before {
+  content: "\201C";
+  position: absolute;
+  top: -0.5rem;
+  left: 1rem;
+  font-size: 5rem;
+  line-height: 1;
+  color: oklch(0.56 0.18 200 / 0.12);
+  font-family: Georgia, serif;
+  pointer-events: none;
+  user-select: none;
+}
+.dark .quote-mark::before {
+  color: oklch(0.62 0.20 200 / 0.18);
+}
+
+/* ── 18. GRADIENT TEXT — coral to teal sweep (static, no animation)
+        Use on headings that need premium two-tone treatment */
+.text-gradient {
+  background: linear-gradient(
+    110deg,
+    oklch(0.64 0.21 38) 0%,
+    oklch(0.56 0.18 200) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.dark .text-gradient {
+  background: linear-gradient(
+    110deg,
+    oklch(0.80 0.20 38)  0%,
+    oklch(0.72 0.18 200) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── 19. CTA BUTTON — coral with teal shimmer border on hover */
+.btn-cta {
+  position: relative;
+  overflow: hidden;
+  background: oklch(0.64 0.21 38);
+  color: #fff;
+  border-radius: 9999px;
+  transition: background 0.2s ease, transform 0.12s ease;
+}
+.btn-cta::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    oklch(1 0 0 / 0.18) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+.btn-cta:hover::after  { transform: translateX(100%); }
+.btn-cta:active        { transform: scale(0.95); }
+.dark .btn-cta         { background: oklch(0.72 0.22 38); }
+
+/* ── 20. OFFLINE BADGE — the "No bars? No problem." floating card */
+.offline-badge {
+  background: linear-gradient(
+    135deg,
+    oklch(0.56 0.18 200) 0%,
+    oklch(0.48 0.20 210) 100%
+  );
+  color: #fff;
+  box-shadow:
+    0 4px 24px -4px oklch(0.56 0.18 200 / 0.55),
+    0 0 0 1px oklch(0.56 0.18 200 / 0.30);
+}
+.dark .offline-badge {
+  background: linear-gradient(
+    135deg,
+    oklch(0.62 0.20 200) 0%,
+    oklch(0.50 0.22 210) 100%
+  );
+  box-shadow:
+    0 4px 32px -4px oklch(0.62 0.20 200 / 0.65),
+    0 0 0 1px oklch(0.62 0.20 200 / 0.35);
+}
+
+
+
+
+
