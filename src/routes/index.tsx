@@ -36,9 +36,6 @@ const HERO_IMG = "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w
 const COLLAB_IMG = "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1400&q=80";
 const PROBLEM_IMG = "https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=1400&q=80";
 const COMMUNITY_IMG = "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80";
-const AV1 = "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&q=80";
-const AV2 = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80";
-const AV3 = "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200&q=80";
 
 function Hero() {
   const ref = useRef<HTMLDivElement>(null);
@@ -79,20 +76,16 @@ function Hero() {
               className="btn-press inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-medium text-accent-foreground"
             >
               Start Studying Free
-            
             </Link>
             <a
               href="#how"
               className="btn-press inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3.5 text-sm font-medium"
             >
-            
               Watch Demo
             </a>
           </div>
           <div className="mt-10 flex items-center gap-6 text-xs text-muted-foreground">
             <div className="font-mono">★★★★★ 4.9 from 200 beta students</div>
-            <div className="hidden h-4 w-px bg-border md:block" />
-            <div>UNILAG · LASU · UI · Covenant · ABU</div>
           </div>
         </motion.div>
 
@@ -136,9 +129,9 @@ function ProblemCard({
     >
       <div className="mb-6 flex items-center justify-between">
         <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-accent">
-            <span className="h-px w-4 bg-accent" />
-            Problem {n}
-          </div>
+          <span className="h-px w-4 bg-accent" />
+          Problem {n}
+        </div>
         <div className="h-2 w-2 rounded-full bg-accent" />
       </div>
       <h3 className="font-display text-2xl">{title}</h3>
@@ -286,7 +279,6 @@ function WhoFor() {
   );
 }
 
-
 function HowStep({
   index,
   t,
@@ -309,7 +301,7 @@ function HowStep({
   const reached = index <= activeIndex;
   const isActive = index === activeIndex;
   const isPast = index < activeIndex;
-  const cardOnRight = index % 2 === 0; // 0,2,4 → right
+  const cardOnRight = index % 2 === 0;
 
   const circle = (
     <motion.div
@@ -350,19 +342,16 @@ function HowStep({
 
   return (
     <div ref={ref} className="relative pb-16 last:pb-0">
-      {/* MOBILE: single column left=circle, right=card */}
       <div className="grid grid-cols-[56px_1fr] gap-5 md:hidden">
         {circle}
         {card}
       </div>
 
-      {/* DESKTOP: zigzag with center line */}
       <div className="hidden md:grid md:grid-cols-[1fr_72px_1fr] md:items-center md:gap-8">
         {cardOnRight ? (
           <>
             <div />
             <div className="flex items-center justify-center">
-              {/* horizontal connector going right */}
               <div
                 className={`absolute left-1/2 ml-9 h-px w-8 transition-colors duration-500 ${reached ? "bg-accent" : "bg-border"}`}
               />
@@ -409,11 +398,8 @@ function HowItWorks() {
         </div>
 
         <div ref={containerRef} className="relative">
-          {/* Center vertical line - desktop */}
           <div className="absolute left-[27px] top-0 hidden h-full w-px bg-border md:left-1/2 md:block md:-translate-x-1/2" />
-          {/* Mobile vertical line */}
           <div className="absolute left-[27px] top-0 h-full w-px bg-border md:hidden" />
-          {/* Active fill */}
           <motion.div
             style={{ scaleY: lineScale, transformOrigin: "top" }}
             className="absolute left-[27px] top-0 h-full w-px bg-accent md:left-1/2 md:-translate-x-1/2"
@@ -524,59 +510,25 @@ function Features() {
   );
 }
 
-function Counter({
-  value,
-  suffix = "",
-  duration = 1400,
-}: {
-  value: number;
-  suffix?: string;
-  duration?: number;
-}) {
-  const [start, setStart] = useState(false);
-  const ref = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) setStart(true);
-      },
-      { threshold: 0.4 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-  const v = useCountUp(value, duration, start);
-  return (
-    <span ref={ref} className="font-mono tabular-nums">
-      {Math.round(v)}
-      {suffix}
-    </span>
-  );
-}
-
-
-
 function Testimonials() {
   const items = [
     {
       name: "Tunde A.",
-      role: "300L Engineering, LASU",
+      role: "300L Engineering, Student",
       avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&q=80",
       quote:
         "I work at a phone repair shop till 5pm. StudyPal gives me 10-minute sessions I can actually finish. My GPA went from 2.8 to 3.4 this semester.",
     },
     {
       name: "Chisom E.",
-      role: "JAMB Candidate, Enugu",
+      role: "JAMB Candidate",
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80",
       quote:
         "I uploaded my Biology past questions and StudyPal turned them into daily quizzes. I scored 287 on my JAMB. I wasn't expecting that at all.",
     },
     {
       name: "Amaka O.",
-      role: "HND Accounting, Yaba Tech",
+      role: "HND Accounting, Student",
       avatar: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200&q=80",
       quote:
         "The voice lessons are everything. I listen while I'm cooking or on the bus. It actually asks me questions and waits for my answer. Nothing else does that.",
@@ -697,7 +649,6 @@ function Landing() {
       <WhoFor />
       <HowItWorks />
       <Features />
-      
       <Testimonials />
       <FinalCTA />
       <Footer />
