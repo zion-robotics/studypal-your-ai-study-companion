@@ -70,10 +70,31 @@ function Signup() {
         password,
         options: { data: { full_name: name.trim() } },
       });
+      
       if (signUpError) throw signUpError;
-      nav({ to: "/onboarding" });
+      
+      // Redirect brand-new signups directly to the dashboard
+      nav({ to: "/dashboard" });
     } catch (err: any) {
-      setSubmitError(friendlyAuthError(err?.message ?? "Something went wrong. Try again."));
+      const errMsg = err?.message?.toLowerCase() ?? "";
+      
+      // If user already exists, seamlessly route them over to the login page
+      if (
+        errMsg.includes("already registered") || 
+        errMsg.includes("user_already_exists") || 
+        errMsg.includes("already exists")
+      ) {
+        nav({ 
+          to: "/login", 
+          search: { 
+            email: email.trim(),
+            message: "You already have an account. Please sign in here." 
+          } 
+        });
+      } else {
+        // Fallback for standard system errors
+        setSubmitError(friendlyAuthError(err?.message ?? "Something went wrong. Try again."));
+      }
     } finally {
       setLoading(false);
     }
