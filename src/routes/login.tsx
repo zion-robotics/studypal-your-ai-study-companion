@@ -1,17 +1,26 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Logo } from "@/components/sp/Logo";
 import { ThemeToggle } from "@/components/sp/ThemeToggle";
 import { supabase } from "@/lib/supabase";
 import { friendlyAuthError, validateEmail } from "@/lib/validation";
 import { requireGuest } from "@/lib/guards";
 
+type LoginSearchParams = {
+  email?: string;
+  message?: string;
+};
+
 export const Route = createFileRoute("/login")({
   ssr: false,
   head: () => ({ meta: [{ title: "Log in — StudyPal" }] }),
   beforeLoad: requireGuest,
+  validateSearch: (search: Record<string, unknown>): LoginSearchParams => ({
+    email: search.email as string | undefined,
+    message: search.message as string | undefined,
+  }),
   component: Login,
 });
 
@@ -36,12 +45,20 @@ function FieldError({ msg }: { msg: string | null }) {
 
 function Login() {
   const nav = useNavigate();
-  const [email, setEmail] = useState("");
+  const search = Route.useSearch();
+  
+  const [email, setEmail] = useState(search.email ?? "");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [touched, setTouched] = useState({ email: false, password: false });
   const [submitError, setSubmitError] = useState<{ text: string; linkTo?: "/login" | "/signup" } | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (search.message) {
+      setSubmitError({ text: search.message });
+    }
+  }, [search.message]);
 
   const emailErr = touched.email ? validateEmail(email) : null;
   const pwErr = touched.password && !password ? "Enter your password" : null;
@@ -53,26 +70,16 @@ function Login() {
     setSubmitError(null);
     if (!formValid) return;
     setLoading(true);
+    
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
+      
       if (signInError) throw signInError;
-      const userId = data.user?.id;
-      let onboarded = false;
-      if (userId) {
-        const { data: profile } = await supabase
-          .from("user_profiles")
-          .select("onboarding_completed")
-          .eq("user_id", userId)
-          .maybeSingle();
-        onboarded =
-          profile?.onboarding_completed ??
-          (data.user?.user_metadata as any)?.onboarding_completed ??
-          false;
-      }
-      nav({ to: onboarded ? "/dashboard" : "/onboarding" });
+      
+      nav({ to: "/dashboard" });
     } catch (err: any) {
       setSubmitError(friendlyAuthError(err?.message ?? "Something went wrong. Try again."));
     } finally {
@@ -85,6 +92,7 @@ function Login() {
 
   return (
     <div className="flex min-h-screen">
+      {/* LEFT image panel — desktop only */}
       <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between overflow-hidden bg-[#0A0A0A]">
         <img
           src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=900&q=80"
@@ -125,6 +133,7 @@ function Login() {
         </div>
       </div>
 
+      {/* RIGHT form panel — full width on mobile */}
       <div className="relative flex w-full flex-col justify-center bg-background px-6 py-12 lg:w-1/2 lg:px-16">
         <div className="absolute right-5 top-5">
           <ThemeToggle />
@@ -245,17 +254,6 @@ function Login() {
               Create a free account
             </Link>
           </p>
-
-          <div className="mt-8 flex items-center justify-center gap-4 opacity-50">
-            {["UNILAG", "LASU", "UI", "FUNAAB", "ABU"].map((school) => (
-              <span
-                key={school}
-                className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground"
-              >
-                {school}
-              </span>
-            ))}
-          </div>
         </motion.div>
       </div>
     </div>
