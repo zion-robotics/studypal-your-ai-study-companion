@@ -73,12 +73,10 @@ function Signup() {
       
       if (signUpError) throw signUpError;
       
-      // Redirect brand-new signups directly to the dashboard
       nav({ to: "/dashboard" });
     } catch (err: any) {
       const errMsg = err?.message?.toLowerCase() ?? "";
       
-      // If user already exists, seamlessly route them over to the login page
       if (
         errMsg.includes("already registered") || 
         errMsg.includes("user_already_exists") || 
@@ -92,7 +90,6 @@ function Signup() {
           } 
         });
       } else {
-        // Fallback for standard system errors
         setSubmitError(friendlyAuthError(err?.message ?? "Something went wrong. Try again."));
       }
     } finally {
@@ -303,17 +300,6 @@ function Signup() {
               Log in
             </Link>
           </p>
-
-          <div className="mt-8 flex items-center justify-center gap-4 opacity-50">
-            {["UNILAG", "LASU", "UI", "FUNAAB", "ABU"].map((school) => (
-              <span
-                key={school}
-                className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground"
-              >
-                {school}
-              </span>
-            ))}
-          </div>
         </motion.div>
       </div>
     </div>
