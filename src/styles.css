@@ -40,106 +40,100 @@
   --font-display: "Nunito", sans-serif;
 }
 
-/* ── LIGHT MODE — warm cream dashboard palette ─────────────────────────────── */
+/* ── LIGHT MODE ─────────────────────────────────────────────────────────────── */
 :root {
   --radius: 1rem;
 
-  /* Base */
-  --background:         oklch(0.97 0.015 85);   /* warm cream — matches dashboard bg */
-  --foreground:         oklch(0.18 0.02 50);     /* warm near-black, not cold */
+  /* Base — warm cream matching the dashboard background */
+  --background:         oklch(0.97 0.015 85);   /* warm cream */
+  --foreground:         oklch(0.15 0.025 45);   /* rich warm near-black — clear & readable */
 
-  /* Cards & popovers — slightly brighter than bg */
-  --card:               oklch(0.995 0.008 85);   /* warm white */
-  --card-foreground:    oklch(0.18 0.02 50);
-  --popover:            oklch(0.995 0.008 85);
-  --popover-foreground: oklch(0.18 0.02 50);
+  /* Cards — clean warm white, clearly lifted above bg */
+  --card:               oklch(1.00 0.005 85);
+  --card-foreground:    oklch(0.15 0.025 45);
+  --popover:            oklch(1.00 0.005 85);
+  --popover-foreground: oklch(0.15 0.025 45);
 
-  /* Primary = coral/orange (logo colour) */
-  --primary:            oklch(0.68 0.19 38);     /* warm orange-coral */
+  /* Primary = coral-orange — the dominant brand colour from the dashboard logo & CTA */
+  --primary:            oklch(0.64 0.21 38);    /* bold coral-orange */
   --primary-foreground: oklch(1 0 0);
 
-  /* Secondary = soft sage green */
-  --secondary:          oklch(0.93 0.06 138);
-  --secondary-foreground: oklch(0.28 0.07 150);
+  /* Secondary = sage green — used for supporting cards & badges, not buttons */
+  --secondary:          oklch(0.88 0.08 145);
+  --secondary-foreground: oklch(0.25 0.08 148);
 
-  /* Muted — warm grey-cream */
-  --muted:              oklch(0.94 0.018 85);
-  --muted-foreground:   oklch(0.52 0.025 60);
+  /* Muted — warm greige, clearly distinct from card white */
+  --muted:              oklch(0.93 0.018 80);
+  --muted-foreground:   oklch(0.48 0.03 55);   /* warm mid-grey — readable but not loud */
 
-  /* Accent — light sage */
-  --accent:             oklch(0.91 0.07 138);
-  --accent-foreground:  oklch(0.28 0.08 150);
+  /* ★ ACCENT = CORAL-ORANGE ★
+     This is the fix — accent was sage green before.
+     All buttons, highlights, hero text, icons now use the same coral as the dashboard. */
+  --accent:             oklch(0.64 0.21 38);    /* same as --primary: bold coral */
+  --accent-foreground:  oklch(1 0 0);           /* white text on coral — clear contrast */
 
   /* Destructive */
-  --destructive:        oklch(0.60 0.22 27);
+  --destructive:        oklch(0.58 0.23 27);
   --destructive-foreground: oklch(1 0 0);
 
-  /* Borders & inputs — warm not grey */
-  --border:             oklch(0.90 0.022 85);
-  --input:              oklch(0.90 0.022 85);
-  --ring:               oklch(0.68 0.19 38);
+  /* Borders & inputs — warm not cold grey */
+  --border:             oklch(0.89 0.022 80);
+  --input:              oklch(0.89 0.022 80);
+  --ring:               oklch(0.64 0.21 38);   /* coral focus ring */
 
-  /* Sidebar — dark charcoal matching dashboard sidebar */
-  --sidebar-dark:           oklch(0.20 0.025 250);
-  --sidebar-dark-foreground: oklch(0.93 0.012 85);
+  /* Sidebar — dark charcoal matching the dashboard sidebar exactly */
+  --sidebar-dark:            oklch(0.18 0.018 255);
+  --sidebar-dark-foreground: oklch(0.92 0.012 85);
 
-  /* Brand palette */
-  --sage:               oklch(0.86 0.08 138);
-  --sage-light:         oklch(0.93 0.05 138);
-  --cream:              oklch(0.96 0.03 88);
-  --coral:              oklch(0.68 0.19 38);     /* primary brand coral */
-  --coral-light:        oklch(0.84 0.10 38);
-  --leaf:               oklch(0.62 0.17 148);    /* deeper green for tags */
+  /* Brand palette tokens — referenced directly in components */
+  --sage:               oklch(0.82 0.10 145);  /* the green from dashboard study cards */
+  --sage-light:         oklch(0.91 0.06 145);
+  --cream:              oklch(0.96 0.03 85);
+  --coral:              oklch(0.64 0.21 38);   /* = accent = primary */
+  --coral-light:        oklch(0.82 0.12 38);   /* hover / tint states */
+  --leaf:               oklch(0.55 0.18 148);  /* deeper green for tags */
 }
 
-/* ── DARK MODE — warm espresso palette (complementary to cream light) ──────── */
+/* ── DARK MODE — warm espresso, not cold blue-black ────────────────────────── */
 .dark {
-  /* Base — warm dark brown, not cold blue-black */
-  --background:         oklch(0.17 0.022 50);    /* deep espresso brown */
-  --foreground:         oklch(0.93 0.018 85);    /* warm off-white */
+  --background:         oklch(0.16 0.020 50);
+  --foreground:         oklch(0.94 0.015 80);  /* warm off-white — easy on the eyes */
 
-  /* Cards — slightly lifted above bg */
-  --card:               oklch(0.21 0.022 50);    /* warm dark card */
-  --card-foreground:    oklch(0.93 0.018 85);
-  --popover:            oklch(0.21 0.022 50);
-  --popover-foreground: oklch(0.93 0.018 85);
+  --card:               oklch(0.20 0.020 50);
+  --card-foreground:    oklch(0.94 0.015 80);
+  --popover:            oklch(0.20 0.020 50);
+  --popover-foreground: oklch(0.94 0.015 80);
 
-  /* Primary = same coral, slightly brighter for dark bg */
-  --primary:            oklch(0.72 0.20 38);
-  --primary-foreground: oklch(0.12 0.01 50);
+  /* Coral pops even brighter on dark backgrounds */
+  --primary:            oklch(0.70 0.22 38);
+  --primary-foreground: oklch(0.10 0.01 50);
 
-  /* Secondary — muted warm green */
-  --secondary:          oklch(0.28 0.05 138);
-  --secondary-foreground: oklch(0.88 0.06 138);
+  --secondary:          oklch(0.27 0.06 145);
+  --secondary-foreground: oklch(0.86 0.07 145);
 
-  /* Muted */
-  --muted:              oklch(0.26 0.02 50);
-  --muted-foreground:   oklch(0.62 0.025 70);
+  --muted:              oklch(0.25 0.018 50);
+  --muted-foreground:   oklch(0.60 0.022 65);
 
-  /* Accent */
-  --accent:             oklch(0.28 0.06 138);
-  --accent-foreground:  oklch(0.88 0.07 138);
+  /* ★ ACCENT stays coral in dark mode too ★ */
+  --accent:             oklch(0.70 0.22 38);
+  --accent-foreground:  oklch(0.10 0.01 50);
 
-  /* Destructive */
   --destructive:        oklch(0.62 0.22 27);
   --destructive-foreground: oklch(1 0 0);
 
-  /* Borders & inputs */
-  --border:             oklch(0.28 0.02 50);
-  --input:              oklch(0.28 0.02 50);
-  --ring:               oklch(0.72 0.20 38);
+  --border:             oklch(0.27 0.018 50);
+  --input:              oklch(0.27 0.018 50);
+  --ring:               oklch(0.70 0.22 38);
 
-  /* Sidebar — even darker in dark mode */
-  --sidebar-dark:           oklch(0.13 0.02 50);
-  --sidebar-dark-foreground: oklch(0.88 0.015 85);
+  --sidebar-dark:            oklch(0.12 0.016 50);
+  --sidebar-dark-foreground: oklch(0.88 0.012 80);
 
-  /* Brand palette — warm shifts for dark */
-  --sage:               oklch(0.50 0.09 138);
-  --sage-light:         oklch(0.32 0.06 138);
-  --cream:              oklch(0.24 0.025 70);
-  --coral:              oklch(0.72 0.20 38);
-  --coral-light:        oklch(0.40 0.12 38);
-  --leaf:               oklch(0.58 0.16 148);
+  --sage:               oklch(0.48 0.10 145);
+  --sage-light:         oklch(0.30 0.06 145);
+  --cream:              oklch(0.23 0.022 65);
+  --coral:              oklch(0.70 0.22 38);
+  --coral-light:        oklch(0.38 0.13 38);
+  --leaf:               oklch(0.55 0.16 148);
 }
 
 @layer base {
