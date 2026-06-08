@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import heroImage from "@/assets/studypal-hero.png";
 import { Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { TopNav } from "@/components/sp/TopNav";
@@ -8,15 +9,15 @@ import { useCountUp } from "@/hooks/useCountUp";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "StudyPal — The study pal every African student always needed" },
+      { title: "StudyPal - The study pal every African student always needed" },
       {
         name: "description",
         content:
-          "Upload your notes. StudyPal structures them, reads them aloud, quizzes you, and keeps you on track — even without internet.",
+          "Upload your notes. StudyPal structures them, reads them aloud, quizzes you, and keeps you on track - even without internet.",
       },
       {
         property: "og:title",
-        content: "StudyPal — Built for African students who study while they work",
+        content: "StudyPal - Built for African students who study while they work",
       },
       {
         property: "og:description",
@@ -70,7 +71,7 @@ function Hero() {
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
             Whether you're in university juggling work and school, or preparing for JAMB, WAEC, or
-            NECO — StudyPal keeps you consistent, even without internet.
+            NECO - StudyPal keeps you consistent, even without internet.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
@@ -78,23 +79,13 @@ function Hero() {
               className="btn-press inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-medium text-accent-foreground"
             >
               Start Studying Free
-              <svg
-                viewBox="0 0 24 24"
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M5 12h14M13 5l7 7-7 7" />
-              </svg>
+            
             </Link>
             <a
               href="#how"
               className="btn-press inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3.5 text-sm font-medium"
             >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-                <path d="M8 5v14l11-7z" />
-              </svg>
+            
               Watch Demo
             </a>
           </div>
@@ -105,76 +96,19 @@ function Hero() {
           </div>
         </motion.div>
 
-        {/* Simple Mockup */}
+        {/* Hero App Screenshot */}
         <motion.div
           style={{ y: yMock }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="relative md:col-span-5"
+          className="relative flex items-center justify-center md:col-span-5"
         >
-          <div className="mx-auto w-full max-w-md">
-            <div className="rounded-3xl border border-border bg-card p-5 shadow-xl">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-2.5 w-2.5 rounded-full bg-accent" />
-                  <div className="font-mono text-xs text-muted-foreground">DAY 12 / 38</div>
-                </div>
-                <div className="font-mono text-xs text-muted-foreground">JAMB BIO</div>
-              </div>
-              <div className="relative mx-auto my-2 grid h-44 w-44 place-items-center">
-                <svg viewBox="0 0 200 200" className="absolute inset-0 -rotate-90">
-                  <circle
-                    cx="100"
-                    cy="100"
-                    r="86"
-                    stroke="currentColor"
-                    className="text-muted"
-                    strokeWidth="14"
-                    fill="none"
-                  />
-                  <circle
-                    cx="100"
-                    cy="100"
-                    r="86"
-                    stroke="currentColor"
-                    className="text-accent"
-                    strokeWidth="14"
-                    fill="none"
-                    strokeDasharray="540"
-                    strokeDashoffset="160"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="text-center">
-                  <div className="font-display text-4xl">70%</div>
-                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    today
-                  </div>
-                </div>
-              </div>
-              <div className="mt-2 rounded-xl bg-muted p-3">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Next up
-                </div>
-                <div className="mt-1 text-sm font-medium">Cellular Respiration · 12 min</div>
-              </div>
-              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                {["7 day", "92%", "26 left"].map((s, i) => (
-                  <div key={i} className="rounded-lg border border-border p-2">
-                    <div className="font-mono text-sm">{s}</div>
-                    <div className="text-[10px] text-muted-foreground">
-                      {["streak", "avg", "days"][i]}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="absolute -bottom-6 -right-6 rounded-2xl border border-border bg-accent px-4 py-3 text-accent-foreground shadow-xl">
-              <div className="font-mono text-[10px] uppercase tracking-wider">offline ready</div>
-              <div className="font-display text-lg">No bars? No problem.</div>
-            </div>
-          </div>
+          <img
+            src={heroImage}
+            alt="StudyPal app dashboard"
+            className="w-full scale-125 drop-shadow-2xl"
+          />
         </motion.div>
       </div>
     </section>
@@ -201,7 +135,10 @@ function ProblemCard({
       className="tilt-card group rounded-3xl border border-border bg-card p-8"
     >
       <div className="mb-6 flex items-center justify-between">
-        <div className="font-mono text-xs text-muted-foreground">PROBLEM / {n}</div>
+        <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-accent">
+            <span className="h-px w-4 bg-accent" />
+            Problem {n}
+          </div>
         <div className="h-2 w-2 rounded-full bg-accent" />
       </div>
       <h3 className="font-display text-2xl">{title}</h3>
@@ -218,7 +155,10 @@ function Problem() {
       </div>
       <div className="mx-auto max-w-7xl px-5">
         <div className="mb-14 max-w-2xl">
-          <div className="font-mono text-xs text-muted-foreground">01 / THE REALITY</div>
+          <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-accent">
+            <span className="h-px w-5 bg-accent" />
+            The Reality
+          </div>
           <h2 className="mt-3 font-display text-4xl md:text-5xl">
             3 reasons African students fall behind.
           </h2>
@@ -264,7 +204,7 @@ const HOW_STEPS = [
   { t: "Voice comprehension check", d: "Three quick questions. Speak or tap. Real understanding." },
   {
     t: "Daily Pulse tracks progress",
-    d: "Not motivation quotes — actual coverage data day by day.",
+    d: "Not motivation quotes - actual coverage data day by day.",
   },
 ];
 
@@ -273,7 +213,7 @@ function WhoFor() {
     {
       badge: "University & Polytechnic",
       heading: "Studying while working?",
-      desc: "You have lectures, assignments, and a job or business on the side. StudyPal breaks your coursework into 10-minute sessions you can do on your commute, lunch break, or before bed — and tracks your progress so nothing falls through the cracks.",
+      desc: "You have lectures, assignments, and a job or business on the side. StudyPal breaks your coursework into 10-minute sessions you can do on your commute, lunch break, or before bed - and tracks your progress so nothing falls through the cracks.",
       points: [
         "Inconsistent internet? Works offline.",
         "No lecturer following up? AI tracks your progress.",
@@ -282,7 +222,7 @@ function WhoFor() {
       cta: "I'm a university student →",
     },
     {
-      badge: "JAMB · WAEC · NECO · POST-UTME",
+      badge: "EXAMS",
       heading: "Exam in weeks. Ready?",
       desc: "Upload your past questions, syllabus, or handwritten notes. StudyPal structures them into a revision plan, quizzes you by voice, and shows you exactly which topics need more attention.",
       points: [
@@ -297,7 +237,10 @@ function WhoFor() {
     <section id="who" className="border-t border-border py-24">
       <div className="mx-auto max-w-7xl px-5">
         <div className="mb-14 max-w-2xl">
-          <div className="font-mono text-xs text-muted-foreground">01.5 / WHO IT'S FOR</div>
+          <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-accent">
+            <span className="h-px w-5 bg-accent" />
+            Who It's For
+          </div>
           <h2 className="mt-3 font-display text-4xl md:text-5xl">Who is StudyPal for?</h2>
           <p className="mt-3 text-muted-foreground">
             Two kinds of African students. One companion built for both.
@@ -458,12 +401,15 @@ function HowItWorks() {
     <section id="how" className="border-t border-border bg-card py-24">
       <div className="mx-auto max-w-5xl px-5">
         <div className="mb-16 text-center">
-          <div className="font-mono text-xs text-muted-foreground">02 / THE FLOW</div>
+          <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-accent">
+            <span className="h-px w-5 bg-accent" />
+            The Flow
+          </div>
           <h2 className="mt-3 font-display text-4xl md:text-5xl">How StudyPal works.</h2>
         </div>
 
         <div ref={containerRef} className="relative">
-          {/* Center vertical line — desktop */}
+          {/* Center vertical line - desktop */}
           <div className="absolute left-[27px] top-0 hidden h-full w-px bg-border md:left-1/2 md:block md:-translate-x-1/2" />
           {/* Mobile vertical line */}
           <div className="absolute left-[27px] top-0 h-full w-px bg-border md:hidden" />
@@ -533,7 +479,10 @@ function Features() {
       <div className="mx-auto max-w-7xl px-5">
         <div className="mb-14 flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-xl">
-            <div className="font-mono text-xs text-muted-foreground">03 / WHAT'S INSIDE</div>
+            <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-accent">
+              <span className="h-px w-5 bg-accent" />
+              What's Inside
+            </div>
             <h2 className="mt-3 font-display text-4xl md:text-5xl">Built for your reality.</h2>
           </div>
           <img src={COLLAB_IMG} alt="" className="h-28 w-44 rounded-2xl object-cover" />
@@ -607,27 +556,7 @@ function Counter({
   );
 }
 
-function Stats() {
-  return (
-    <section className="border-y border-border bg-[oklch(0.10_0_0)] py-20 text-[oklch(0.953_0.018_75)]">
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-10 px-5 md:grid-cols-4">
-        {[
-          { display: "2", label: "Who we serve — user types" },
-          { display: "JAMB · WAEC · NECO", label: "Exams covered" },
-          { display: "10 min", label: "Avg session length" },
-          { display: "0 bars", label: "Internet needed offline" },
-        ].map((s, i) => (
-          <div key={i}>
-            <div className="font-display text-4xl leading-tight md:text-6xl">{s.display}</div>
-            <div className="mt-3 font-mono text-xs uppercase tracking-widest text-white/60">
-              {s.label}
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
+
 
 function Testimonials() {
   const items = [
@@ -657,7 +586,10 @@ function Testimonials() {
     <section id="testimonials" className="border-t border-border py-24">
       <div className="mx-auto max-w-7xl px-5">
         <div className="mb-14 max-w-2xl">
-          <div className="font-mono text-xs text-muted-foreground">04 / IN THEIR WORDS</div>
+          <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-accent">
+            <span className="h-px w-5 bg-accent" />
+            In Their Words
+          </div>
           <h2 className="mt-3 font-display text-4xl md:text-5xl">What students are saying.</h2>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
@@ -750,7 +682,7 @@ function Footer() {
         </nav>
       </div>
       <div className="mx-auto mt-10 max-w-7xl border-t border-border px-5 pt-6 font-mono text-xs text-muted-foreground">
-        BUILT FOR YPIT HACKATHON 2026 — EDUCATION TRACK · © STUDYPAL
+        BUILT FOR YPIT HACKATHON 2026 - EDUCATION TRACK · © STUDYPAL
       </div>
     </footer>
   );
@@ -765,7 +697,7 @@ function Landing() {
       <WhoFor />
       <HowItWorks />
       <Features />
-      <Stats />
+      
       <Testimonials />
       <FinalCTA />
       <Footer />
