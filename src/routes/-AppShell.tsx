@@ -14,7 +14,7 @@ import { useAuth, getInitials } from "@/hooks/useAuth";
 
 const NAV = [
   { to: "/dashboard", icon: <LayoutDashboard className="h-5 w-5" />, label: "Dashboard" },
-  { to: "/community", icon: <Users className="h-5 w-5" />,           label: "Community" },
+  
   { to: "/courses",   icon: <FolderOpen className="h-5 w-5" />,      label: "Courses" },
   { to: "/session",  icon: <Brain className="h-5 w-5" />,           label: "Study" },
   { to: "/documents", icon: <FileText className="h-5 w-5" />,        label: "Documents" },
