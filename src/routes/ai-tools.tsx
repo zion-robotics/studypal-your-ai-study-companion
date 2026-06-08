@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/sp/AppShell";
 
-export const Route = createFileRoute("/session")({
+export const Route = createFileRoute("/ai-tools")({
   head: () => ({
     meta: [
       { title: "Study | StudyPal" },

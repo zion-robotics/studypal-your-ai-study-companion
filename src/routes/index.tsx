@@ -8,7 +8,7 @@ import { useCountUp } from "@/hooks/useCountUp";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "StudyPal — The study pal every student always needed" },
+      { title: "StudyPal — The study pal every African student always needed" },
       {
         name: "description",
         content:
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/")({
       },
       {
         property: "og:title",
-        content: "StudyPal — Your AI-powered study companion",
+        content: "StudyPal — Built for African students who study while they work",
       },
       {
         property: "og:description",
@@ -66,10 +66,11 @@ function Hero() {
             <span className="font-mono text-muted-foreground">YPIT HACKATHON 2026 · EDUCATION</span>
           </div>
           <h1 className="font-display text-5xl leading-[0.95] tracking-tight md:text-7xl">
-            The study pal <span className="text-accent">every student</span> always needed.
+            The study pal every <span className="text-accent">African student</span> always needed.
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-            Whether you're in university, preparing for exams, or self-studying — StudyPal keeps you consistent, even without internet.
+            Whether you're in university juggling work and school, or preparing for JAMB, WAEC, or
+            NECO — StudyPal keeps you consistent, even without internet.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
@@ -200,7 +201,7 @@ function ProblemCard({
       className="tilt-card group rounded-3xl border border-border bg-card p-8"
     >
       <div className="mb-6 flex items-center justify-between">
-        <div className="font-mono text-xs text-muted-foreground">CHALLENGE / {n}</div>
+        <div className="font-mono text-xs text-muted-foreground">PROBLEM / {n}</div>
         <div className="h-2 w-2 rounded-full bg-accent" />
       </div>
       <h3 className="font-display text-2xl">{title}</h3>
@@ -219,7 +220,7 @@ function Problem() {
         <div className="mb-14 max-w-2xl">
           <div className="font-mono text-xs text-muted-foreground">01 / THE REALITY</div>
           <h2 className="mt-3 font-display text-4xl md:text-5xl">
-            Why most students struggle.
+            3 reasons African students fall behind.
           </h2>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
@@ -267,34 +268,45 @@ const HOW_STEPS = [
   },
 ];
 
-function ForWho() {
+function WhoFor() {
   const cards = [
     {
-      icon: "🎓",
-      heading: "Built for every learner",
-      desc: "Whether you're in university, polytechnic, preparing for exams, or self-studying — StudyPal adapts to your pace and lifestyle.",
+      badge: "University & Polytechnic",
+      heading: "Studying while working?",
+      desc: "You have lectures, assignments, and a job or business on the side. StudyPal breaks your coursework into 10-minute sessions you can do on your commute, lunch break, or before bed — and tracks your progress so nothing falls through the cracks.",
       points: [
-        "Works offline after the first load",
-        "AI tracks progress automatically",
-        "Fits into your real schedule",
+        "Inconsistent internet? Works offline.",
+        "No lecturer following up? AI tracks your progress.",
+        "Too tired after work? Micro-sessions fit your life.",
       ],
-      cta: "Get Started Free →",
+      cta: "I'm a university student →",
+    },
+    {
+      badge: "JAMB · WAEC · NECO · POST-UTME",
+      heading: "Exam in weeks. Ready?",
+      desc: "Upload your past questions, syllabus, or handwritten notes. StudyPal structures them into a revision plan, quizzes you by voice, and shows you exactly which topics need more attention.",
+      points: [
+        "Scattered past questions? Organized in seconds.",
+        "Don't know what to prioritize? AI builds your plan.",
+        "Need to practice recall? Voice comprehension checks.",
+      ],
+      cta: "I'm preparing for exams →",
     },
   ];
   return (
     <section id="who" className="border-t border-border py-24">
       <div className="mx-auto max-w-7xl px-5">
         <div className="mb-14 max-w-2xl">
-          <div className="font-mono text-xs text-muted-foreground">01.5 / FOR YOU</div>
-          <h2 className="mt-3 font-display text-4xl md:text-5xl">One companion for all learners.</h2>
+          <div className="font-mono text-xs text-muted-foreground">01.5 / WHO IT'S FOR</div>
+          <h2 className="mt-3 font-display text-4xl md:text-5xl">Who is StudyPal for?</h2>
           <p className="mt-3 text-muted-foreground">
-            Designed to work for anyone who wants to study smarter, not harder.
+            Two kinds of African students. One companion built for both.
           </p>
         </div>
-        <div className="grid gap-6 md:grid-cols-1 max-w-2xl">
+        <div className="grid gap-6 md:grid-cols-2">
           {cards.map((c, i) => (
             <motion.div
-              key={i}
+              key={c.badge}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -302,8 +314,10 @@ function ForWho() {
               className="tilt-card group relative overflow-hidden rounded-3xl border border-border bg-card p-8 transition-shadow hover:shadow-[0_30px_80px_-40px_rgb(13_148_136_/_0.55)]"
             >
               <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <div className="text-4xl mb-4">{c.icon}</div>
-              <h3 className="font-display text-3xl leading-tight">{c.heading}</h3>
+              <div className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-accent">
+                {c.badge}
+              </div>
+              <h3 className="mt-5 font-display text-3xl leading-tight">{c.heading}</h3>
               <p className="mt-3 text-muted-foreground">{c.desc}</p>
               <ul className="mt-6 space-y-3">
                 {c.points.map((p) => (
@@ -598,7 +612,7 @@ function Stats() {
     <section className="border-y border-border bg-[oklch(0.10_0_0)] py-20 text-[oklch(0.953_0.018_75)]">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-10 px-5 md:grid-cols-4">
         {[
-          { display: "∞", label: "For any learner" },
+          { display: "2", label: "Who we serve — user types" },
           { display: "JAMB · WAEC · NECO", label: "Exams covered" },
           { display: "10 min", label: "Avg session length" },
           { display: "0 bars", label: "Internet needed offline" },
@@ -688,7 +702,7 @@ function FinalCTA() {
           Stop falling behind. Start building <span className="text-accent">consistency.</span>
         </h2>
         <p className="mt-6 text-lg text-muted-foreground">
-          Join thousands of students using StudyPal to actually finish what they started.
+          Join the first batch of students using StudyPal to actually finish what they started.
         </p>
         <Link
           to="/signup"
@@ -717,7 +731,7 @@ function Footer() {
         <div>
           <div className="font-display text-2xl">StudyPal</div>
           <div className="mt-2 max-w-sm text-sm text-muted-foreground">
-            The study pal every student always needed.
+            The study pal every African student always needed.
           </div>
         </div>
         <nav className="flex flex-wrap gap-6 text-sm text-muted-foreground">
@@ -748,7 +762,7 @@ function Landing() {
       <TopNav />
       <Hero />
       <Problem />
-      <ForWho />
+      <WhoFor />
       <HowItWorks />
       <Features />
       <Stats />

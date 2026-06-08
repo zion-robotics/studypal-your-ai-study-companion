@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import {
   Bell, Plus, Upload, FileText, Folder,
-  ChevronRight, ChevronDown, FilePlus, Search,
+  ChevronRight, ChevronDown, Search,
   Sparkles, CheckCircle2, MoreVertical,
   ClipboardList, FlipHorizontal, BookOpen, Mic,
   GraduationCap, X, FolderOpen,
@@ -11,7 +11,6 @@ import { AppShell } from "./-AppShell";
 import { useAuth, getFirstName, getDisplayName, getInitials } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import { requireAuth } from "@/lib/guards";
-import uploadImg from "@/assets/upload-illustration.jpg";
 import chemImg from "@/assets/subj-chemistry.jpg";
 import econImg from "@/assets/subj-economy.jpg";
 import bioImg from "@/assets/subj-biology.jpg";
@@ -86,11 +85,6 @@ function DashboardPage() {
   const [searchResults, setSearchResults]   = useState<{ docs: RecentDoc[]; folders: CourseFolder[] } | null>(null);
   const [searchFocused, setSearchFocused]   = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
-
-  // Course selector in left panel
-  const [courseOpen, setCourseOpen]         = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<CourseFolder | null>(null);
-  const courseDropRef = useRef<HTMLDivElement>(null);
 
   const firstName    = getFirstName(profile, user);
   const displayName  = getDisplayName(profile, user);
@@ -198,110 +192,12 @@ function DashboardPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Close course dropdown on outside click
-  useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (courseDropRef.current && !courseDropRef.current.contains(e.target as Node)) {
-        setCourseOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
   const showSearchDrop = searchFocused && (searchQuery.trim() !== "" || true) && searchResults !== null;
   const hasNoFolders = !dataLoading && allFolders.length === 0;
 
   return (
     <AppShell>
       <div className="flex h-full overflow-hidden">
-
-        {/* ── Left column — Quick Upload ────────────────────────────── */}
-        <section className="w-[280px] shrink-0 bg-sage-light p-6 flex flex-col h-full overflow-y-auto">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold">Quick Upload</h2>
-            {/* FilePlus → goes straight to Courses upload */}
-            <Link to="/courses" title="Upload a document in Courses">
-              <button className="rounded-md p-2 hover:bg-white/50 transition">
-                <FilePlus className="h-4 w-4" />
-              </button>
-            </Link>
-          </div>
-
-          {/* User identity card */}
-          <div className="mt-5 rounded-2xl bg-white border px-4 py-3 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full overflow-hidden bg-coral/80 flex items-center justify-center text-white text-sm font-bold shrink-0 ring-2 ring-coral/20">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
-              ) : (
-                <span>{initials}</span>
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="font-extrabold text-sm truncate">{displayName}</p>
-              <p className="text-[10px] text-muted-foreground truncate">
-                {courseOfStudy
-                  ? `${courseOfStudy}${university ? ` · ${university}` : ""}`
-                  : (user?.email ?? "")}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-4 flex-1 flex items-center justify-center min-h-0">
-            <img src={uploadImg} alt="" className="max-w-full max-h-full object-contain" loading="lazy" />
-          </div>
-
-          <div className="text-center">
-            <h4 className="text-xl font-extrabold">Upload Files or<br />Documents</h4>
-            <p className="text-xs text-muted-foreground mt-2 mb-4">
-              Drop files into a course folder:
-            </p>
-
-            {/* Course selector */}
-            <div ref={courseDropRef} className="relative mb-3">
-              <button
-                onClick={() => setCourseOpen((o) => !o)}
-                className="w-full rounded-xl border bg-white px-3 py-2 flex items-center justify-between text-sm font-medium cursor-pointer hover:bg-white/80 transition"
-              >
-                <span className={selectedCourse ? "text-foreground" : "text-muted-foreground"}>
-                  {selectedCourse ? selectedCourse.title : (hasNoFolders ? "No folders yet" : "Select a course…")}
-                </span>
-                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-              </button>
-
-              {courseOpen && (
-                <div className="absolute top-full left-0 right-0 mt-1 z-30 rounded-xl border bg-white shadow-lg py-1 max-h-48 overflow-y-auto">
-                  {hasNoFolders ? (
-                    <Link to="/courses" className="block px-4 py-2.5 text-sm text-coral font-semibold hover:bg-sage-light transition">
-                      + Create your first folder
-                    </Link>
-                  ) : (
-                    allFolders.map((f) => (
-                      <button
-                        key={f.id}
-                        onClick={() => { setSelectedCourse(f); setCourseOpen(false); }}
-                        className={`w-full text-left px-4 py-2.5 text-sm hover:bg-sage-light transition flex items-center gap-2 ${
-                          selectedCourse?.id === f.id ? "font-bold text-coral" : "text-foreground"
-                        }`}
-                      >
-                        <Folder className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                        <span className="truncate">{f.title}</span>
-                        {f.parent_id && <span className="text-[10px] text-muted-foreground ml-auto shrink-0">sub</span>}
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Upload button → Courses page (with selected folder context if possible) */}
-            <Link to="/courses">
-              <button className="w-full rounded-xl bg-gradient-to-b from-coral to-primary py-3.5 text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-coral/30 hover:opacity-95 transition">
-                <Upload className="h-4 w-4" /> Upload Document
-              </button>
-            </Link>
-          </div>
-        </section>
 
         {/* ── Main ─────────────────────────────────────────────────── */}
         <main className="flex-1 p-8 overflow-y-auto h-full">
@@ -498,7 +394,7 @@ function DashboardPage() {
           </section>
         </main>
 
-        {/* ── Right column — AI Tools ───────────────────────────────── */}
+        {/* ── Right column — Study ──────────────────────────────────── */}
         <aside className="w-[320px] shrink-0 bg-sage-light/40 flex flex-col h-full overflow-y-auto">
           <div className="h-[220px] shrink-0 relative overflow-hidden">
             <img src={cityImg} alt="" className="w-full h-full object-cover" loading="lazy" />
@@ -514,7 +410,7 @@ function DashboardPage() {
 
           <div className="flex-1 p-6 flex flex-col">
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-extrabold">AI Tools</h3>
+              <h3 className="text-xl font-extrabold">Study</h3>
               <Link to="/ai-tools">
                 <button className="flex items-center gap-1 rounded-lg border bg-white px-3 py-1.5 text-xs font-semibold hover:bg-sage-light transition">
                   All <ChevronDown className="h-3 w-3" />
