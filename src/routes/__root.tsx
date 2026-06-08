@@ -10,7 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
 
-import appCss from "../styles.css?url";
+import appCss = "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/lib/supabase";
 
@@ -146,50 +146,34 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    // Only redirect after a genuine OAuth/magic-link callback — when Supabase
-    // puts the access_token in the URL hash. On every other page load this
-    // will be false, so session-restore "SIGNED_IN" events won't redirect.
+    // Check if Supabase passed an auth callback access_token in the URL hash
     const hasAuthHash = window.location.hash.includes("access_token");
 
-    const routeAfterSignIn = async (
-      session: NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]>,
-    ) => {
-      const { data: profile } = await supabase
-        .from("user_profiles")
-        .select("onboarding_completed")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-
+    const routeAfterSignIn = () => {
+      // Clear out the auth hash parameters cleanly from the URL browser string
       if (window.location.hash) {
         window.history.replaceState(null, "", window.location.pathname);
       }
 
-      if (profile?.onboarding_completed) {
-        router.navigate({ to: "/dashboard" });
-      } else {
-        router.navigate({ to: "/onboarding" });
-      }
+      // ✅ Always route directly to dashboard now. Profile/Onboarding checks removed.
+      router.navigate({ to: "/dashboard" });
     };
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      // Guard: only redirect when we're actually handling an auth callback.
-      // Without this guard, Supabase fires "SIGNED_IN" on every page load
-      // when it restores the session from localStorage, which caused every
-      // route to redirect back to /dashboard.
+      // Guard: only auto-navigate during explicit callback operations
       if (event === "SIGNED_IN" && session && hasAuthHash) {
-        void routeAfterSignIn(session);
+        routeAfterSignIn();
       }
 
       void router.invalidate();
     });
 
-    // Also handle the case where the page loads with the hash already present
-    // (e.g. user lands directly on the callback URL).
+    // Handle direct land on callback hash targets
     if (hasAuthHash) {
       void supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) void routeAfterSignIn(session);
+        if (session) routeAfterSignIn();
       });
     }
 
@@ -198,7 +182,6 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster richColors position="top-right" />
     </QueryClientProvider>
