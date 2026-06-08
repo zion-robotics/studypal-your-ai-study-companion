@@ -13,7 +13,6 @@ import { Route as UploadRouteImport } from './routes/upload'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SessionRouteImport } from './routes/session'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotesRouteImport } from './routes/notes'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DocumentsRouteImport } from './routes/documents'
@@ -45,11 +44,7 @@ const SessionRoute = SessionRouteImport.update({
   path: '/session',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
+
 const NotesRoute = NotesRouteImport.update({
   id: '/notes',
   path: '/notes',
@@ -111,7 +106,7 @@ export interface FileRoutesByFullPath {
   '/documents': typeof DocumentsRoute
   '/login': typeof LoginRoute
   '/notes': typeof NotesRoute
-  '/onboarding': typeof OnboardingRoute
+
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
@@ -128,7 +123,7 @@ export interface FileRoutesByTo {
   '/documents': typeof DocumentsRoute
   '/login': typeof LoginRoute
   '/notes': typeof NotesRoute
-  '/onboarding': typeof OnboardingRoute
+
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
@@ -146,7 +141,7 @@ export interface FileRoutesById {
   '/documents': typeof DocumentsRoute
   '/login': typeof LoginRoute
   '/notes': typeof NotesRoute
-  '/onboarding': typeof OnboardingRoute
+ 
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
@@ -165,7 +160,7 @@ export interface FileRouteTypes {
     | '/documents'
     | '/login'
     | '/notes'
-    | '/onboarding'
+  
     | '/session'
     | '/settings'
     | '/signup'
@@ -182,7 +177,7 @@ export interface FileRouteTypes {
     | '/documents'
     | '/login'
     | '/notes'
-    | '/onboarding'
+  
     | '/session'
     | '/settings'
     | '/signup'
