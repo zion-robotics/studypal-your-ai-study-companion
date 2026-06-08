@@ -11,11 +11,7 @@ export const Route = createFileRoute("/auth/callback")({
 
 /**
  * Supabase redirects here after Google OAuth.
- * The URL will contain either:
- *   - A `code` query param (PKCE flow) — exchanged for a session automatically by the Supabase client
- *   - An `error` query param — something went wrong on Google's side
- *
- * After the session is established we check onboarding status and forward the user.
+ * Exchanges the OAuth code for a session and forwards the user to the dashboard.
  */
 function AuthCallback() {
   const nav = useNavigate();
@@ -46,27 +42,8 @@ function AuthCallback() {
         return;
       }
 
-      // Check whether this user has completed onboarding
-      const userId = session.user.id;
-      let onboarded = false;
-
-      try {
-        const { data: profile } = await supabase
-          .from("user_profiles")
-          .select("onboarding_completed")
-          .eq("user_id", userId)
-          .maybeSingle();
-
-        onboarded =
-          profile?.onboarding_completed ??
-          (session.user?.user_metadata as any)?.onboarding_completed ??
-          false;
-      } catch {
-        // If the profile lookup fails, send them to onboarding — safer default
-        onboarded = false;
-      }
-
-      nav({ to: onboarded ? "/dashboard" : "/onboarding" });
+      // Onboarding is removed. Everyone goes straight to the dashboard now.
+      nav({ to: "/dashboard" });
     }
 
     handleCallback();
