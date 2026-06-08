@@ -18,6 +18,8 @@ import {
   X,
 } from "lucide-react";
 import { AppShell } from "@/components/sp/AppShell";
+import { groqChat, groqStructured } from "@/lib/groq";
+import { openRouterVision } from "@/lib/openrouter.server";
 
 export const Route = createFileRoute("/session")({
   head: () => ({
@@ -26,7 +28,7 @@ export const Route = createFileRoute("/session")({
       { name: "description", content: "Upload a document and ask the AI to summarize, quiz, or revise it." },
     ],
   }),
-  component: AiToolsPage,
+  component: SessionPage,
 });
 
 type Tool = null | "summary" | "quiz" | "flashcards";
@@ -56,65 +58,45 @@ type DocData = {
   imageMimeType?: string;
 };
 
-const API_KEY = "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";
-const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const TEXT_MODEL = "openai/gpt-4o-mini";
-const VISION_MODEL = "openai/gpt-4o";
-
 // ── TTS CONFIG ──────────────────────────────────────────────────────────────
-const ELEVENLABS_API_KEY = "sk_87f7cd427da73babbb63a3609142a6b910cda10f91a7621a";
-const ELEVENLABS_TTS_URL = "https://api.elevenlabs.io/v1/text-to-speech";
-const ELEVENLABS_MODEL   = "eleven_multilingual_v2";
+const TTS_PROXY = "http://localhost:3001";
+const AETHEX_TTS_NOTE = "Aethex Voice API (ElevenLabs Nigerian voices active as fallback)";
 
-// ElevenLabs voice IDs (Nigerian / African accent voices)
-const ELEVENLABS_VOICES = [
-  { id: "EXAVITQu4vr4xnSDxMaL", label: "Sarah (Female)",      pidgin: false },
-  { id: "TX3LPaxmHKxFdv7VOQHJ", label: "Liam (Male)",         pidgin: false },
-  { id: "XB0fDUnXU5powFXDhCwa", label: "Charlotte (Female)",  pidgin: false },
-  { id: "nPczCjzI2devNBz1zQrb", label: "Brian (Male)",        pidgin: false },
-  { id: "pFZP5JQG7iQjIQuC4Bku", label: "Lily (Female)",       pidgin: false },
-  { id: "onwK4e9ZLuTAKqWW03F9", label: "Daniel (Male)",       pidgin: false },
-  { id: "N2lVS1w4EtoT3dr4eOWO", label: "Callum (Male)",       pidgin: false },
-  { id: "CwhRBWXzGAHq8TQ4Fs17", label: "Roger (Male)",        pidgin: false },
-  { id: "EXAVITQu4vr4xnSDxMaL", label: "Sarah Pidgin",        pidgin: true  },
-  { id: "TX3LPaxmHKxFdv7VOQHJ", label: "Liam Pidgin",         pidgin: true  },
-  { id: "onwK4e9ZLuTAKqWW03F9", label: "Daniel Pidgin",       pidgin: true  },
+const AETHEX_VOICES = [
+  { id: "default",                                label: "Default Voice" },
+  { id: "8466fb57-9f6b-53ad-ba5a-9729617f761c",  label: "Kemi (NG Female)" },
+  { id: "9ef397e0-8cc3-58b3-af79-0234f95a3801",  label: "Mary (NG Female)" },
+  { id: "96b20f06-536a-55ef-82c3-4882b6547858",  label: "Tolu (NG Female)" },
+  { id: "cb4ea7ea-027b-532a-b7de-356c6887a5f3",  label: "Deborah (NG Female)" },
+  { id: "93c0d2e1-61b2-51d5-8d92-a8adfef1a4ea",  label: "Segun (NG Male)" },
+  { id: "6cdade1e-41d3-52cd-bf99-7e6822758b10",  label: "Sunday (NG Male)" },
+  { id: "5c34046a-ac9b-57d5-8c70-5a61e694be3f",  label: "Femi (NG Male)" },
+  { id: "fdf12da6-fc5c-56d3-bdc5-9f3da0b65453",  label: "Chinedu (NG Male)" },
+  { id: "37449a6f-a93c-583d-80da-d005cb0b542b",  label: "Fatima (NG Female)" },
+  { id: "83210cdc-1274-5d8b-8494-d07338ba2348",  label: "Kemi Pidgin" },
+  { id: "7096175e-5cb2-5685-975e-7e98941ed6bb",  label: "Segun Pidgin" },
+  { id: "0d109a91-8d87-5d06-93f8-5f421bcaa76a",  label: "Musa Pidgin" },
 ];
 
 type TtsState = "idle" | "loading" | "playing" | "error";
 
-async function elevenLabsSpeak(
+async function aethexSpeak(
   text: string,
-  voiceIndex: number,
+  voiceId: string,
   onStateChange: (s: TtsState) => void,
   audioRef: MutableRefObject<HTMLAudioElement | null>
 ): Promise<void> {
   if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
   onStateChange("loading");
-
-  const voice = ELEVENLABS_VOICES[voiceIndex] ?? ELEVENLABS_VOICES[0];
-
   try {
-    const res = await fetch(`${ELEVENLABS_TTS_URL}/${voice.id}`, {
+    const res = await fetch(`${TTS_PROXY}/tts`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "xi-api-key": ELEVENLABS_API_KEY,
-      },
-      body: JSON.stringify({
-        text: text.slice(0, 2500),
-        model_id: ELEVENLABS_MODEL,
-        voice_settings: {
-          stability: voice.pidgin ? 0.45 : 0.50,
-          similarity_boost: 0.82,
-          style: 0.35,
-          use_speaker_boost: true,
-        },
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: text.slice(0, 3000), voice_id: voiceId }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err?.detail?.message || err?.detail || `TTS error (${res.status})`);
+      throw new Error(err?.error || `TTS error (${res.status})`);
     }
     const blob = await res.blob();
     const objUrl = URL.createObjectURL(blob);
@@ -190,26 +172,41 @@ async function imageToBase64(file: File): Promise<string> {
   });
 }
 
-async function callOpenRouter(messages: any[], systemPrompt?: string, useVision = false): Promise<string> {
-  const model = useVision ? VISION_MODEL : TEXT_MODEL;
-  const body: any = {
-    model,
-    messages: systemPrompt ? [{ role: "system", content: systemPrompt }, ...messages] : messages,
-  };
-  const res = await fetch(OPENROUTER_URL, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `API error ${res.status}`);
-  }
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content || "No response received.";
+// ── API HELPERS ──────────────────────────────────────────────────────────────
+
+async function callText(
+  messages: { role: "system" | "user" | "assistant"; content: string }[]
+): Promise<string> {
+  const result = await groqChat({ data: { messages } });
+  return result.text;
 }
 
-function buildDocMessage(docData: DocData, prompt: string): any {
+async function callVision(
+  messages: { role: "user" | "assistant" | "system"; content: any }[],
+  systemPrompt?: string
+): Promise<string> {
+  const result = await openRouterVision({ data: { messages, systemPrompt } });
+  return result.text;
+}
+
+async function callStructured(prompt: string, schemaHint?: string): Promise<any> {
+  return groqStructured({ data: { prompt, schemaHint } });
+}
+
+function buildTextMessages(
+  systemPrompt: string,
+  userContent: string
+): { role: "system" | "user" | "assistant"; content: string }[] {
+  return [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userContent },
+  ];
+}
+
+function buildVisionMessage(
+  docData: DocData,
+  prompt: string
+): { role: "user"; content: any } {
   if (docData.isImage && docData.imageBase64 && docData.imageMimeType) {
     return {
       role: "user",
@@ -225,7 +222,7 @@ function buildDocMessage(docData: DocData, prompt: string): any {
   };
 }
 
-function AiToolsPage() {
+function SessionPage() {
   const [docData, setDocData] = useState<DocData | null>(null);
   const [tool, setTool] = useState<Tool>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -236,7 +233,7 @@ function AiToolsPage() {
   const [flashcardData, setFlashcardData] = useState<Flashcard[]>([]);
   const [toolLoading, setToolLoading] = useState(false);
   const [introMessage, setIntroMessage] = useState<string>("");
-  const [ttsVoice, setTtsVoice] = useState(0);
+  const [ttsVoice, setTtsVoice] = useState("default");
   const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -280,8 +277,15 @@ function AiToolsPage() {
       }
       const doc: DocData = { name: file.name, size: formatFileSize(file.size), extractedText, isImage, imageBase64, imageMimeType };
       setDocData(doc);
-      const introMsg = buildDocMessage(doc, `In 2-3 sentences, tell the student what this document is about and what you can help them with. Be conversational and encouraging. No markdown.`);
-      const intro = await callOpenRouter([introMsg], undefined, isImage);
+
+      let intro: string;
+      if (doc.isImage) {
+        const msg = buildVisionMessage(doc, `In 2-3 sentences, tell the student what this document is about and what you can help them with. Be conversational and encouraging. No markdown.`);
+        intro = await callVision([msg]);
+      } else {
+        const userContent = `Here is the content of the document "${doc.name}":\n\n${doc.extractedText}\n\n---\n\nIn 2-3 sentences, tell the student what this document is about and what you can help them with. Be conversational and encouraging. No markdown.`;
+        intro = await callText(buildTextMessages(SYSTEM_PROMPT, userContent));
+      }
       setIntroMessage(intro);
     } catch (err: any) {
       alert("Failed to process document: " + (err.message || "Unknown error"));
@@ -295,29 +299,74 @@ function AiToolsPage() {
     if (newTool === tool) { setTool(null); return; }
     setTool(newTool);
     if (!docData) return;
+
     if (newTool === "summary" && !summary) {
       setToolLoading(true);
       try {
-        const msg = buildDocMessage(docData, `Provide a long, detailed summary of this document. Write in plain flowing paragraphs. Cover all key concepts clearly. No markdown.`);
-        setSummary(await callOpenRouter([msg], undefined, docData.isImage));
+        if (docData.isImage) {
+          const msg = buildVisionMessage(docData, `Provide a long, detailed summary of this document. Write in plain flowing paragraphs. Cover all key concepts clearly. No markdown.`);
+          setSummary(await callVision([msg]));
+        } else {
+          const userContent = `Here is the content of "${docData.name}":\n\n${docData.extractedText}\n\n---\n\nProvide a long, detailed summary. Write in plain flowing paragraphs. Cover all key concepts clearly. No markdown.`;
+          setSummary(await callText(buildTextMessages(SYSTEM_PROMPT, userContent)));
+        }
       } catch (err: any) {
         setSummary("Failed to generate summary: " + (err.message || "Unknown error"));
       } finally { setToolLoading(false); }
     }
+
     if (newTool === "quiz" && quizData.length === 0) {
       setToolLoading(true);
       try {
-        const msg = buildDocMessage(docData, `Generate exactly 8 multiple-choice quiz questions. Return ONLY a valid JSON array, no markdown, no backticks. Shape: {"question":"...","options":[{"label":"A","text":"...","correct":false}],"explanation":"..."}. Exactly one correct per question.`);
-        const result = await callOpenRouter([msg], undefined, docData.isImage);
-        setQuizData(JSON.parse(result.replace(/```json|```/g, "").trim()));
+        const basePrompt = docData.isImage
+          ? `Generate exactly 8 multiple-choice quiz questions based on the image content.`
+          : `Here is the content of "${docData.name}":\n\n${docData.extractedText}\n\n---\n\nGenerate exactly 8 multiple-choice quiz questions.`;
+        const fullPrompt = `${basePrompt} Return ONLY a valid JSON array. Shape: [{"question":"...","options":[{"label":"A","text":"...","correct":false}],"explanation":"..."}]. Exactly one correct option per question.`;
+
+        let raw: any;
+        if (docData.isImage) {
+          const msg = buildVisionMessage(docData, fullPrompt);
+          const text = await callVision([msg]);
+          raw = JSON.parse(text.replace(/```json|```/g, "").trim());
+        } else {
+          raw = await callStructured(fullPrompt, `Array of quiz question objects.`);
+          // groqStructured wraps in json_object mode — handle both array and {questions:[]}
+          if (Array.isArray(raw)) {
+            // great
+          } else if (Array.isArray(raw?.questions)) {
+            raw = raw.questions;
+          } else {
+            raw = [];
+          }
+        }
+        setQuizData(raw);
       } catch { setQuizData([]); } finally { setToolLoading(false); }
     }
+
     if (newTool === "flashcards" && flashcardData.length === 0) {
       setToolLoading(true);
       try {
-        const msg = buildDocMessage(docData, `Generate exactly 12 flashcards. Return ONLY a valid JSON array, no markdown, no backticks. Shape: {"term":"...","definition":"..."}. Keep definitions 1-2 sentences.`);
-        const result = await callOpenRouter([msg], undefined, docData.isImage);
-        setFlashcardData(JSON.parse(result.replace(/```json|```/g, "").trim()));
+        const basePrompt = docData.isImage
+          ? `Generate exactly 12 flashcards based on the image content.`
+          : `Here is the content of "${docData.name}":\n\n${docData.extractedText}\n\n---\n\nGenerate exactly 12 flashcards.`;
+        const fullPrompt = `${basePrompt} Return ONLY a valid JSON array. Shape: [{"term":"...","definition":"..."}]. Keep definitions 1-2 sentences.`;
+
+        let raw: any;
+        if (docData.isImage) {
+          const msg = buildVisionMessage(docData, fullPrompt);
+          const text = await callVision([msg]);
+          raw = JSON.parse(text.replace(/```json|```/g, "").trim());
+        } else {
+          raw = await callStructured(fullPrompt, `Array of flashcard objects with term and definition.`);
+          if (Array.isArray(raw)) {
+            // great
+          } else if (Array.isArray(raw?.flashcards)) {
+            raw = raw.flashcards;
+          } else {
+            raw = [];
+          }
+        }
+        setFlashcardData(raw);
       } catch { setFlashcardData([]); } finally { setToolLoading(false); }
     }
   }
@@ -329,25 +378,27 @@ function AiToolsPage() {
     setMessages(updatedMessages);
     setIsLoading(true);
     try {
-      let apiMessages: any[];
-      if (docData) {
-        const docContext = docData.isImage
-          ? `The student has uploaded an image called "${docData.name}".`
-          : `The student has uploaded "${docData.name}". Content:\n\n${docData.extractedText}\n\n---`;
+      let reply: string;
+
+      if (docData?.isImage) {
         const historyText = messages.map((m) => `${m.role === "user" ? "Student" : "Assistant"}: ${m.content}`).join("\n");
-        apiMessages = [{
-          role: "user",
-          content: docData.isImage && docData.imageBase64
-            ? [
-                { type: "image_url", image_url: { url: `data:${docData.imageMimeType};base64,${docData.imageBase64}` } },
-                { type: "text", text: `${historyText ? historyText + "\n\n" : ""}Student: ${text}` },
-              ]
-            : `${docContext}\n\n${historyText ? historyText + "\n\n" : ""}Student: ${text}`,
-        }];
+        const visionMsg = {
+          role: "user" as const,
+          content: [
+            { type: "image_url", image_url: { url: `data:${docData.imageMimeType};base64,${docData.imageBase64}` } },
+            { type: "text", text: `${historyText ? historyText + "\n\n" : ""}Student: ${text}` },
+          ],
+        };
+        reply = await callVision([visionMsg], SYSTEM_PROMPT);
       } else {
-        apiMessages = updatedMessages.map((m) => ({ role: m.role, content: m.content }));
+        const docContext = docData
+          ? `The student has uploaded "${docData.name}". Content:\n\n${docData.extractedText}\n\n---\n\n`
+          : "";
+        const historyText = messages.map((m) => `${m.role === "user" ? "Student" : "Assistant"}: ${m.content}`).join("\n");
+        const userContent = `${docContext}${historyText ? historyText + "\n\n" : ""}Student: ${text}`;
+        reply = await callText(buildTextMessages(SYSTEM_PROMPT, userContent));
       }
-      const reply = await callOpenRouter(apiMessages, SYSTEM_PROMPT, docData?.isImage ?? false);
+
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } catch {
       setMessages((prev) => [...prev, { role: "assistant", content: "Something went wrong. Please check your connection and try again." }]);
@@ -412,7 +463,7 @@ function UploadingState() {
 }
 
 /* ---- SPEAK BUTTON ---- */
-function SpeakButton({ text, ttsVoice, ttsAudioRef }: { text: string; ttsVoice: number; ttsAudioRef: MutableRefObject<HTMLAudioElement | null> }) {
+function SpeakButton({ text, ttsVoice, ttsAudioRef }: { text: string; ttsVoice: string; ttsAudioRef: MutableRefObject<HTMLAudioElement | null> }) {
   const [state, setState] = useState<TtsState>("idle");
   const lastClickRef = useRef(0);
 
@@ -424,12 +475,12 @@ function SpeakButton({ text, ttsVoice, ttsAudioRef }: { text: string; ttsVoice: 
     const now = Date.now();
     if (now - lastClickRef.current < 2000) return;
     lastClickRef.current = now;
-    elevenLabsSpeak(text, ttsVoice, setState, ttsAudioRef);
+    aethexSpeak(text, ttsVoice, setState, ttsAudioRef);
   }
 
   return (
     <div className="mt-2 flex items-center gap-2 flex-wrap">
-      <button onClick={handleClick} disabled={state === "loading"} title={state === "playing" ? "Stop" : "Listen"}
+      <button onClick={handleClick} disabled={state === "loading"} title={state === "playing" ? "Stop" : "Listen with " + AETHEX_TTS_NOTE}
         className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition ${
           state === "playing" ? "border-foreground bg-foreground text-background"
           : state === "loading" ? "border-border text-muted-foreground opacity-60 cursor-not-allowed"
@@ -441,12 +492,13 @@ function SpeakButton({ text, ttsVoice, ttsAudioRef }: { text: string; ttsVoice: 
           : state === "error" ? (<><Volume2 className="h-3 w-3" />Retry</>)
           : (<><Volume2 className="h-3 w-3" />Listen</>)}
       </button>
+      <span className="text-[10px] text-muted-foreground/50 italic">via Aethex Voice (browser fallback active)</span>
     </div>
   );
 }
 
 /* ---- CHAT THREAD ---- */
-function ChatThread({ messages, isLoading, ttsVoice, ttsAudioRef }: { messages: Message[]; isLoading: boolean; ttsVoice: number; ttsAudioRef: MutableRefObject<HTMLAudioElement | null> }) {
+function ChatThread({ messages, isLoading, ttsVoice, ttsAudioRef }: { messages: Message[]; isLoading: boolean; ttsVoice: string; ttsAudioRef: MutableRefObject<HTMLAudioElement | null> }) {
   return (
     <div className="space-y-6 mt-6">
       {messages.map((m, i) => (
@@ -781,7 +833,7 @@ function useSpeechToText(onResult: (text: string) => void) {
 /* ---- COMPOSER ---- */
 function Composer({ hasDoc, onSend, isLoading, onAttach, ttsVoice, onVoiceChange }: {
   hasDoc: boolean; onSend: (text: string) => void; isLoading: boolean;
-  onAttach: () => void; ttsVoice: number; onVoiceChange: (v: number) => void;
+  onAttach: () => void; ttsVoice: string; onVoiceChange: (v: string) => void;
 }) {
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -805,6 +857,16 @@ function Composer({ hasDoc, onSend, isLoading, onAttach, ttsVoice, onVoiceChange
 
   return (
     <div className="border-t border-border bg-background/90 backdrop-blur shrink-0">
+      {/* Aethex TTS notice banner */}
+      <div className="mx-auto w-full max-w-3xl px-5 pt-2">
+        <div className="flex items-center gap-1.5 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-1.5">
+          <Volume2 className="h-3 w-3 shrink-0 text-amber-500/70" />
+          <p className="text-[10px] text-amber-600/80 dark:text-amber-400/70">
+            <span className="font-semibold">Aethex Voice API</span> — host allowlist pending. ElevenLabs Nigerian voices active as fallback.
+          </p>
+        </div>
+      </div>
+
       <div className="mx-auto w-full max-w-3xl px-5 py-3">
         <div className={`flex items-end gap-2 rounded-2xl border bg-card p-2 transition ${isListening ? "border-coral/60 ring-2 ring-coral/20" : "border-border focus-within:border-coral/40"}`}>
           <button type="button" onClick={onAttach}
@@ -846,10 +908,10 @@ function Composer({ hasDoc, onSend, isLoading, onAttach, ttsVoice, onVoiceChange
           </p>
           <div className="flex items-center gap-1.5 shrink-0">
             <Volume2 className="h-3 w-3 text-muted-foreground" />
-            <select value={ttsVoice} onChange={(e) => onVoiceChange(Number(e.target.value))}
+            <select value={ttsVoice} onChange={(e) => onVoiceChange(e.target.value)}
               className="rounded-lg border border-border bg-card py-0.5 pl-2 pr-6 text-[11px] text-muted-foreground focus:outline-none focus:border-coral/40 hover:border-coral/30 transition cursor-pointer">
-              {ELEVENLABS_VOICES.map((v, i) => (
-                <option key={i} value={i}>{v.label}</option>
+              {AETHEX_VOICES.map((v) => (
+                <option key={v.id} value={v.id}>{v.label}</option>
               ))}
             </select>
           </div>
