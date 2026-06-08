@@ -94,46 +94,61 @@
   --leaf:               oklch(0.55 0.18 148);  /* deeper green for tags */
 }
 
-/* ── DARK MODE — warm espresso, not cold blue-black ────────────────────────── */
+/* ── DARK MODE ──────────────────────────────────────────────────────────────── */
+/*
+   Layer stack (light → dark, clearly separated):
+   sidebar-dark  0.11  ← darkest, the left rail
+   background    0.14  ← main page bg
+   card          0.21  ← cards / panels — noticeably lighter than bg
+   muted         0.28  ← muted fills / input backgrounds
+   border        0.32  ← borders sit above muted
+*/
 .dark {
-  --background:         oklch(0.16 0.020 50);
-  --foreground:         oklch(0.94 0.015 80);  /* warm off-white — easy on the eyes */
+  /* Page background — deep dark, but warm not cold */
+  --background:         oklch(0.14 0.018 50);
+  --foreground:         oklch(0.95 0.012 80);  /* bright warm white — high contrast */
 
-  --card:               oklch(0.20 0.020 50);
-  --card-foreground:    oklch(0.94 0.015 80);
-  --popover:            oklch(0.20 0.020 50);
-  --popover-foreground: oklch(0.94 0.015 80);
+  /* Cards clearly lifted from the background */
+  --card:               oklch(0.21 0.016 50);  /* +0.07 above bg — clearly visible lift */
+  --card-foreground:    oklch(0.95 0.012 80);
+  --popover:            oklch(0.21 0.016 50);
+  --popover-foreground: oklch(0.95 0.012 80);
 
-  /* Coral pops even brighter on dark backgrounds */
-  --primary:            oklch(0.70 0.22 38);
-  --primary-foreground: oklch(0.10 0.01 50);
+  /* Coral — brighter on dark for visibility */
+  --primary:            oklch(0.72 0.22 38);
+  --primary-foreground: oklch(1 0 0);
 
-  --secondary:          oklch(0.27 0.06 145);
-  --secondary-foreground: oklch(0.86 0.07 145);
+  /* Sage green — muted on dark */
+  --secondary:          oklch(0.30 0.07 145);
+  --secondary-foreground: oklch(0.88 0.07 145);
 
-  --muted:              oklch(0.25 0.018 50);
-  --muted-foreground:   oklch(0.60 0.022 65);
+  /* Muted — clearly above card, used for subtle fills */
+  --muted:              oklch(0.28 0.015 50);
+  --muted-foreground:   oklch(0.63 0.020 70);  /* readable subtext */
 
-  /* ★ ACCENT stays coral in dark mode too ★ */
-  --accent:             oklch(0.70 0.22 38);
-  --accent-foreground:  oklch(0.10 0.01 50);
+  /* ★ ACCENT = coral, bright enough to pop on dark bg ★ */
+  --accent:             oklch(0.72 0.22 38);
+  --accent-foreground:  oklch(1 0 0);
 
-  --destructive:        oklch(0.62 0.22 27);
+  --destructive:        oklch(0.64 0.22 27);
   --destructive-foreground: oklch(1 0 0);
 
-  --border:             oklch(0.27 0.018 50);
-  --input:              oklch(0.27 0.018 50);
-  --ring:               oklch(0.70 0.22 38);
+  /* Borders — visible but not glaring */
+  --border:             oklch(0.32 0.014 55);
+  --input:              oklch(0.28 0.015 50);
+  --ring:               oklch(0.72 0.22 38);
 
-  --sidebar-dark:            oklch(0.12 0.016 50);
-  --sidebar-dark-foreground: oklch(0.88 0.012 80);
+  /* Sidebar — the darkest layer, matching the dashboard left rail */
+  --sidebar-dark:            oklch(0.11 0.014 50);
+  --sidebar-dark-foreground: oklch(0.90 0.010 80);
 
-  --sage:               oklch(0.48 0.10 145);
-  --sage-light:         oklch(0.30 0.06 145);
-  --cream:              oklch(0.23 0.022 65);
-  --coral:              oklch(0.70 0.22 38);
-  --coral-light:        oklch(0.38 0.13 38);
-  --leaf:               oklch(0.55 0.16 148);
+  /* Brand tokens */
+  --sage:               oklch(0.50 0.11 145);
+  --sage-light:         oklch(0.32 0.07 145);
+  --cream:              oklch(0.22 0.020 65);
+  --coral:              oklch(0.72 0.22 38);
+  --coral-light:        oklch(0.40 0.14 38);
+  --leaf:               oklch(0.56 0.17 148);
 }
 
 @layer base {
